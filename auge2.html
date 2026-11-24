@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="lesson" content="2">
+<meta name="format-detection" content="telephone=no">
+<title>Das Auge – Stunde 2: Warum verschwindet der Punkt?</title>
+<style>
+:root{
+  --ink:#1b2624; --ink2:#4d5956; --paper:#f6f4ee; --line:#cdd5d1;
+  --pri:#17594f; --pri-d:#0f3f38; --pri-l:#e2efec;
+  --ok:#1f6f43; --ok-l:#e3f1e7; --err:#9c3d1b; --err-l:#f9eae3;
+  --light:#d27d00; --sig:#4a3f9a;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;font-size:18px;line-height:1.5;color:var(--ink);background:var(--paper);-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{touch-action:manipulation}
+h1{font-size:30px;line-height:1.2;margin:0 0 10px}
+h2{font-size:22px;line-height:1.25;margin:30px 0 8px}
+h3{font-size:19px;margin:0 0 4px}
+p{margin:0 0 12px}
+.txt{max-width:46em}
+.muted{color:var(--ink2)}
+.kicker{font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pri);margin:0 0 4px}
+.lead{font-size:19px}
+
+/* Kopfzeile */
+.top{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line)}
+.top-in{max-width:1040px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:14px}
+.brand{font-weight:700;font-size:18px;line-height:1.15;white-space:nowrap}
+.brand span{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.top nav{flex:1;min-width:0}
+.steps{list-style:none;margin:0;padding:0;display:flex;gap:6px;flex:1;min-width:0}
+.steps li{flex:1 1 0;min-width:0}
+.steps li:first-child{flex:0 0 auto}
+.step{width:100%;min-height:50px;border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:4px 8px;font-size:15px;line-height:1.2;display:flex;align-items:center;gap:8px;text-align:left;cursor:pointer}
+.step.home{padding:4px 14px;font-weight:700}
+.step .num{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.step .num svg{width:15px;height:15px}
+.step .tx{min-width:0}
+.step .nm{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step .st{display:block;font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step.cur{border-color:var(--pri);border-width:2.5px;background:var(--pri-l)}
+.step.cur .num{background:var(--pri);border-color:var(--pri);color:#fff}
+.step.done .num{background:var(--ok);border-color:var(--ok);color:#fff}
+.step.lock{color:#66716e;background:#f1f1ed;border-style:dashed}
+@media (max-width:900px){.brand{display:none}}
+
+.wrap{max-width:1040px;margin:0 auto;padding:22px 24px 70px}
+.toast{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:40;background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;max-width:min(90vw,560px);font-size:17px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+
+/* Schaltflächen */
+.btn{min-height:48px;padding:8px 20px;border-radius:8px;border:2px solid var(--pri);background:#fff;color:var(--pri-d);font-weight:700;font-size:17px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.pri{background:var(--pri);color:#fff}
+.btn:disabled{border-color:#b5bdb9;background:#ecece8;color:#7a8481;cursor:default}
+.btn svg{width:18px;height:18px;flex:none}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.bnav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
+.bnav .r{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+.lockmsg{margin:0;font-size:16px;color:var(--ink2);max-width:22em;text-align:right}
+
+/* Aufgaben, Rückmeldungen */
+.tno{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--pri);color:#fff;border-radius:5px;padding:3px 9px;margin-right:8px;vertical-align:3px}
+.tdone{font-size:16px;font-weight:700;color:var(--ok);margin-left:8px;white-space:nowrap}
+.fb{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;padding:10px 14px;border-radius:8px;border:1.5px solid var(--line);border-left-width:6px;background:#fff;font-size:17px}
+.fb .fbi{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:var(--ink2);font-size:16px}
+.fb.ok{border-color:var(--ok);background:var(--ok-l)} .fb.ok .fbi{background:var(--ok)}
+.fb.err{border-color:var(--err);background:var(--err-l)} .fb.err .fbi{background:var(--err)}
+.fb.info{border-color:var(--pri);background:var(--pri-l)} .fb.info .fbi{background:var(--pri);font-family:Georgia,serif;font-style:italic}
+
+/* Arbeitsblatt-Hinweis */
+.ws{border:2px solid var(--pri);border-radius:10px;background:#fff;margin:30px 0 0;overflow:hidden;max-width:52em}
+.ws-h{display:flex;align-items:center;gap:10px;background:var(--pri);color:#fff;font-weight:700;padding:10px 14px}
+.ws-h svg{width:26px;height:26px;flex:none}
+.ws-b{padding:14px 16px 4px}
+.ws-b ul{margin:0 0 12px;padding-left:22px}
+.ws-b li{margin-bottom:6px}
+.ws-b li.open{color:#737d7a}
+.wsline{display:flex;gap:8px;align-items:flex-start;border:1.5px solid var(--pri);border-radius:8px;padding:8px 10px;background:var(--pri-l);margin:0}
+.wsline svg{width:22px;height:22px;flex:none;color:var(--pri);margin-top:2px}
+
+/* Abbildungen */
+.figwrap{margin:14px auto 0;max-width:780px}
+.figwrap.wide{max-width:900px}
+svg.fig{display:block;width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px}
+svg text{font-family:Arial,"Helvetica Neue",Helvetica,sans-serif;fill:#1b2624}
+.figlbl{font-size:17px}
+.figcap{font-size:16px;color:var(--ink2);margin:6px 0 0;text-align:center}
+.halo{paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round}
+.ray-light{stroke:var(--light);stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ray-sig{stroke:var(--sig);stroke-width:4;fill:none;stroke-dasharray:9 6;stroke-linecap:round;stroke-linejoin:round}
+
+/* Baustein 1 */
+.plus{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;border:2px solid var(--pri);color:var(--pri-d);font-weight:700;font-size:17px;line-height:1;vertical-align:-4px;background:#fff}
+.m3{position:relative;z-index:0;width:100%;aspect-ratio:4/3;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.m3 canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block;cursor:grab}
+.m3 svg{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+.hsl{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.hsb{position:absolute;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;padding:0;border:0;background:transparent;pointer-events:auto;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s}
+.hsb i{width:30px;height:30px;border-radius:50%;background:#fff;border:2.5px solid var(--pri);color:var(--pri-d);font-style:normal;font-weight:700;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.4)}
+.hsb.seen i{background:var(--ok);border-color:#fff;color:#fff;font-size:16px}
+.hsb.on i{background:var(--pri-d);border-color:#fff;color:#fff;box-shadow:0 0 0 3px var(--pri-d)}
+.hsb.off{opacity:0;pointer-events:none}
+.hsb.pulse i{animation:hp .8s ease 3}
+@keyframes hp{50%{transform:scale(1.55)}}
+.hname{position:absolute;left:0;top:0;z-index:2500;background:var(--pri-d);color:#fff;font-weight:700;font-size:16px;padding:4px 10px;border-radius:6px;white-space:nowrap;pointer-events:none}
+.m3hint{position:absolute;left:10px;top:8px;font-size:15px;color:var(--ink2);background:rgba(255,255,255,.88);padding:3px 9px;border-radius:6px;pointer-events:none}
+.m3tools{position:absolute;left:8px;right:8px;bottom:8px;z-index:3000;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;pointer-events:none}
+.m3tools .btn{pointer-events:auto;min-height:44px;padding:4px 12px;font-size:15px;border-width:1.5px;background:rgba(255,255,255,.95)}
+.hs *{fill:transparent;stroke:transparent;stroke-width:1}
+.hs.on *{fill:rgba(13,158,133,.45);stroke:#0f3f38;stroke-width:3}
+.dock{position:sticky;bottom:0;z-index:5;background:var(--paper);border-top:1px solid var(--line);margin-top:10px;padding:12px 0 12px;max-width:900px;margin-left:auto;margin-right:auto}
+@media (min-width:1000px) and (orientation:landscape){
+  .wrap,.top-in{max-width:1100px}
+  .b1grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+  .b1grid .figwrap{margin:14px 0 0;max-width:none}
+  .b1grid .dock{position:sticky;top:82px;bottom:auto;border-top:0;margin:14px 0 0;padding:0;max-width:none}
+}
+.solwrap{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
+.prog{display:flex;align-items:center;gap:12px;margin-bottom:10px;font-size:16px}
+.bar{flex:1;height:12px;border-radius:6px;background:#d9dfdc;overflow:hidden;min-width:80px}
+.bar-in{height:100%;width:0;background:var(--pri);transition:width .25s}
+.info{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px}
+.info p{margin-bottom:10px}
+
+/* Baustein 2: Sortieren */
+.sortwrap{display:flex;gap:10px;max-width:600px;margin-top:12px}
+.sortnums{list-style:none;margin:0;padding:0;width:38px;flex:none}
+.sortnums li{height:52px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink2);border:1.5px solid var(--line);border-radius:8px;background:#fff}
+.sortlist{position:relative;flex:1;height:472px}
+.sitem{position:absolute;left:0;right:0;top:0;height:52px;display:flex;align-items:center;gap:10px;padding:0 4px 0 12px;border:2px solid var(--pri);border-radius:8px;background:#fff;font-weight:700;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .18s ease;cursor:grab}
+.sitem.drag{transition:none;z-index:5;box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.sitem .grip{display:flex;flex-direction:column;gap:4px;flex:none}
+.sitem .grip i{display:block;width:18px;height:2px;background:#7b8683;border-radius:1px}
+.sitem .snm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sitem .sst{display:none;font-size:16px;color:var(--ok);padding-right:10px;white-space:nowrap}
+.sitem .sb{width:44px;height:44px;flex:none;border:1.5px solid var(--line);border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.sitem .sb svg{width:16px;height:16px}
+.sitem.ok{border-color:var(--ok);background:var(--ok-l);cursor:default;touch-action:auto}
+.sitem.ok .sst{display:block}
+.sitem.ok .sb,.sitem.ok .grip{display:none}
+.animstat{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0;min-height:76px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:16px;color:var(--ink2);margin:8px 0}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend svg{width:44px;height:10px}
+.slider{max-width:620px;margin:10px 0}
+.slider label{display:block;font-weight:700}
+.slider .ends{display:flex;justify-content:space-between;font-size:16px;color:var(--ink2)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:0;display:block}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:#c3cdc9}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:var(--pri);border:3px solid #fff;box-shadow:0 0 0 1.5px var(--pri);margin-top:-13px}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:#c3cdc9}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:var(--pri);border:3px solid #fff}
+details.q{border:1.5px solid var(--line);border-radius:10px;background:#fff;margin:12px 0;max-width:52em}
+details.q summary{min-height:50px;padding:10px 14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary::before{content:"+";flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--pri);color:var(--pri);display:flex;align-items:center;justify-content:center;font-weight:700}
+details.q[open] summary::before{content:"–"}
+details.q .a{padding:0 14px 6px 52px}
+.think{border-left:5px solid var(--pri);background:#fff;padding:12px 16px;border-radius:0 10px 10px 0;margin:22px 0 10px;max-width:52em}
+.think p{margin:0;font-weight:700;font-size:19px}
+
+/* Baustein 3 */
+.exp{background:#fff;border:1.5px solid var(--ink);border-radius:10px;height:220px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:14px 0}
+.expin{display:flex;align-items:center}
+.expin.mir{flex-direction:row-reverse}
+.expin svg{width:28px;height:28px;flex:none;display:block}
+.steps3{list-style:none;margin:10px 0 0;padding:0;counter-reset:s;max-width:46em}
+.steps3 li{position:relative;padding:4px 0 8px 46px;counter-increment:s}
+.steps3 li::before{content:counter(s);position:absolute;left:0;top:2px;width:32px;height:32px;border-radius:50%;border:2px solid var(--pri);color:var(--pri);font-weight:700;display:flex;align-items:center;justify-content:center}
+.note{background:#fff;border:1.5px solid var(--line);border-left:6px solid var(--pri);border-radius:8px;padding:10px 14px;max-width:46em;margin:12px 0}
+.estep{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;max-width:46em}
+.estep strong{color:var(--pri-d)}
+textarea{width:100%;max-width:46em;min-height:120px;padding:10px 12px;border:1.5px solid #7b8683;border-radius:8px;background:#fff;font-size:18px;line-height:1.45;display:block}
+.chk{display:flex;gap:12px;align-items:center;min-height:44px}
+.chk input{width:26px;height:26px;flex:none;accent-color:var(--pri)}
+
+/* Baustein 3 (Stunde 2) */
+.btn.on{background:var(--pri);color:#fff}
+.pst{border:2px solid var(--ink);border-radius:10px;background:#fff;margin:16px 0 12px;overflow:hidden;max-width:52em}
+.pst-h{display:flex;align-items:center;gap:10px;background:var(--ink);color:#fff;font-weight:700;padding:10px 14px}
+.pst-h svg{width:26px;height:26px;flex:none}
+.pst-b{padding:14px 16px 4px}
+.hyp{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:52em}
+.hyp>div{background:#fff;border:1.5px solid var(--line);border-left:6px solid var(--pri);border-radius:8px;padding:10px 14px}
+.hyp p{margin:4px 0 0}
+@media (max-width:700px){.hyp{grid-template-columns:1fr}}
+.mc{max-width:46em;margin:10px 0}
+.mc button{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;margin:0 0 8px;padding:8px 14px;border:2px solid var(--pri);border-radius:8px;background:#fff;font-size:17px;text-align:left;cursor:pointer;color:var(--ink)}
+.mc .mk{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--pri);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--pri-d)}
+.mc button:disabled{cursor:default;opacity:1;color:var(--ink);-webkit-text-fill-color:var(--ink)}
+.mc button.right{border-color:var(--ok);background:var(--ok-l)} .mc button.right .mk{background:var(--ok);border-color:var(--ok);color:#fff;-webkit-text-fill-color:#fff}
+.mc button.wrong{border-color:var(--err);background:var(--err-l);border-style:dashed} .mc button.wrong .mk{background:var(--err);border-color:var(--err);color:#fff;-webkit-text-fill-color:#fff}
+.mc button.pick{background:var(--pri-l);border-width:3px} .mc button.pick .mk{background:var(--pri);color:#fff}
+.found{list-style:none;margin:10px 0;padding:0;max-width:46em}
+.found li{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:17px}
+
+/* Baustein 4 */
+.extra{display:inline-flex;align-items:center;gap:8px;border:2px dashed var(--pri);border-radius:8px;padding:6px 12px;font-weight:700;color:var(--pri-d);background:#fff;margin:0 0 10px}
+.foc{position:relative;background:#fff;border:1.5px solid var(--ink);border-radius:10px;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overflow:hidden;max-width:46em;margin:12px 0;cursor:pointer}
+.foc p{margin:0;padding:18px 20px;font-size:20px;line-height:1.75}
+.foc .blur{-webkit-filter:blur(3.5px);filter:blur(3.5px);opacity:.92}
+.foc .sharp{position:absolute;left:0;top:0;right:0;-webkit-mask-image:linear-gradient(transparent,transparent);mask-image:linear-gradient(transparent,transparent)}
+.ov{list-style:none;margin:14px 0;padding:0;max-width:40em;border:1.5px solid var(--line);border-radius:10px;background:#fff}
+.ov li{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.ov li:last-child{border-bottom:0}
+.ov span:last-child{color:var(--ink2);white-space:nowrap}
+ol.lf{max-width:44em;padding-left:26px}
+ol.lf li{margin-bottom:8px;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- Wiederverwendete Zeichnungen (Auge, Symbole) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+  <g id="eyeBase" stroke="#3b4442" stroke-width="1.5" stroke-linejoin="round">
+    <circle r="141" fill="#edf3f4" stroke="none"/>
+    <path d="M-111.1 -86.8 A96.06 96.06 0 0 0 -111.1 86.8 L-98 70 L-96 58 L-96 -58 L-98 -70 Z" fill="#f9fcfc" stroke="none"/>
+    <path d="M-118.2 -92.3 A150 150 0 1 1 -118.2 92.3 L-111.1 86.8 A141 141 0 1 0 -111.1 -86.8 Z" fill="#fbfaf6"/>
+    <path d="M-74.7 -119.6 A141 141 0 1 1 -74.7 119.6 L-71 113.6 A134 134 0 1 0 -71 -113.6 Z" fill="#b9614d"/>
+    <path d="M-62.9 -118.3 A134 134 0 1 1 -62.9 118.3 L-59.6 112.1 A127 127 0 1 0 -59.6 -112.1 Z" fill="#f2d7a0"/>
+    <path d="M-111.1 -86.8 L-98 -70 Q-84 -84 -71 -113.6 L-74.7 -119.6 A141 141 0 0 0 -111.1 -86.8 Z" fill="#cf8f7c"/>
+    <path d="M-111.1 86.8 L-98 70 Q-84 84 -71 113.6 L-74.7 119.6 A141 141 0 0 1 -111.1 86.8 Z" fill="#cf8f7c"/>
+    <path d="M-98 -70 L-98 -57.5 M-92.4 -76.2 L-93 -57.3 M-88.3 -81.7 L-88 -54.5 M-98 70 L-98 57.5 M-92.4 76.2 L-93 57.3 M-88.3 81.7 L-88 54.5" fill="none" stroke-width="0.8"/>
+    <ellipse cx="-96" cy="0" rx="24" ry="58" fill="#d7e7ee"/>
+    <path d="M-113 -85 L-128 -26 Q-126 -21 -121 -24 L-104 -80 Z" fill="#5f86a0"/>
+    <path d="M-113 85 L-128 26 Q-126 21 -121 24 L-104 80 Z" fill="#5f86a0"/>
+    <path d="M-118.2 -92.3 A102.6 102.6 0 0 0 -118.2 92.3 L-111.1 86.8 A96.06 96.06 0 0 1 -111.1 -86.8 Z" fill="#d3e6ec"/>
+    <path d="M124.8 26.8 L196.1 50 L188.1 74.8 L116.8 51.6 Z" fill="#ecd98a"/>
+    <path d="M128 36 L193 57 M125 44 L190.5 65.3" fill="none" stroke="#a58a2c" stroke-width="0.9"/>
+    <path d="M133.7 -9.3 A134 134 0 0 1 133.7 9.3 L126.7 8.9 Q131 0 126.7 -8.9 Z" fill="#f2c200"/>
+  </g>
+  <symbol id="ic-pencil" viewBox="0 0 24 24"><path d="M4 20l1.2-4.6L16.5 4.1a1.5 1.5 0 0 1 2.1 0l1.3 1.3a1.5 1.5 0 0 1 0 2.1L8.6 18.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.6 6l3.4 3.4M4 20l4.6-1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="ic-pair" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3.2" fill="currentColor"/><circle cx="16.5" cy="8" r="3.2" fill="currentColor"/><path d="M2 20v-2.2a6 6 0 0 1 12 0V20zM15 13.2a6 6 0 0 1 7 4.6V20h-6.3v-2.2a7.6 7.6 0 0 0-1.6-4.3z" fill="currentColor"/></symbol>
+  <symbol id="ic-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.2"/></symbol>
+  <symbol id="ic-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+  <symbol id="ic-pause" viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" fill="currentColor"/><rect x="14" y="4" width="5" height="16" fill="currentColor"/></symbol>
+  <symbol id="ic-replay" viewBox="0 0 24 24"><path d="M5.5 13a6.5 6.5 0 1 0 2-5.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M4 4.5v5h5z" fill="currentColor"/></symbol>
+  <symbol id="ic-up" viewBox="0 0 24 24"><path d="M12 5l8 12H4z" fill="currentColor"/></symbol>
+  <symbol id="ic-down" viewBox="0 0 24 24"><path d="M12 19L4 7h16z" fill="currentColor"/></symbol>
+</defs>
+</svg>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">Das Auge<span id="brandSub">Klasse 9</span></div>
+    <nav aria-label="Bausteine"><ol class="steps" id="steps"></ol></nav>
+  </div>
+</header>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<main class="wrap">
+
+<!-- ===================== Baustein 0 ===================== -->
+<section id="bs0" hidden>
+  <div data-lesson="1">
+    <p class="kicker">Stunde 1</p>
+    <h1>Bau des Auges und Weg des Lichts</h1>
+    <p class="lead txt">In dieser Stunde lernst du die Teile des Auges kennen. Danach verfolgst du den Weg des Lichts – vom Gegenstand bis ins Gehirn.</p>
+    <h2>Die Leitfragen der Stunde</h2>
+    <ol class="lf">
+      <li>Aus welchen Strukturen besteht das Auge – und welche Aufgabe hat jede?</li>
+      <li>Welchen Weg nimmt das Licht durch das Auge?</li>
+      <li>Welches Bild entsteht auf der Netzhaut?</li>
+    </ol>
+  </div>
+  <div data-lesson="2">
+    <p class="kicker">Stunde 2</p>
+    <h1>Warum verschwindet der Punkt?</h1>
+    <p class="lead txt">Eben ist ein Punkt für dich verschwunden. Am Ende dieser Stunde kannst du erklären, warum.</p>
+    <h2>Die Leitfragen der Stunde</h2>
+    <ol class="lf">
+      <li>Warum verschwindet der Punkt, obwohl er die ganze Zeit da ist?</li>
+      <li>Wie kann man prüfen, ob eine Vermutung stimmt?</li>
+    </ol>
+  </div>
+
+  <h2>So arbeitest du</h2>
+  <div class="txt">
+    <p data-lesson="1">Du arbeitest allein und in deinem Tempo. Neben dir liegt das Arbeitsblatt.</p>
+    <p data-lesson="2">Du arbeitest in deinem Tempo. Neben dir liegt das Arbeitsblatt. An zwei Stellen besprichst du dich mit deiner Sitznachbarin oder deinem Sitznachbarn. Du erkennst diese Stellen am Kasten „Partner-Stopp“.</p>
+    <p>Immer wenn du diesen Kasten siehst, bearbeitest du die genannte Aufgabe auf dem Arbeitsblatt. Formuliere selbst. Danach kannst du oft eine Vergleichslösung aufklappen.</p>
+  </div>
+  <div class="ws" style="margin-top:8px">
+    <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Aufgabe …</div>
+    <div class="ws-b"><p>Hier steht, was du auf dem Arbeitsblatt bearbeitest.</p></div>
+  </div>
+  <ul class="ov" data-lesson="1">
+    <li><span><strong>Baustein 1</strong> · Aufbau des Auges</span><span>ca. 15 Min</span></li>
+    <li><span><strong>Baustein 2</strong> · Der Weg des Lichts</span><span>ca. 12 Min</span></li>
+  </ul>
+  <ul class="ov" data-lesson="2">
+    <li><span><strong>Baustein 3</strong> · Warum verschwindet der Punkt?</span><span>ca. 20 Min</span></li>
+    <li><span><strong>Zusatz</strong> · Lücke im Sehfeld, linkes Auge</span><span>nur für Schnelle</span></li>
+  </ul>
+  <div class="bnav">
+    <div class="row"><button type="button" class="btn" id="resetBtn">Von vorn beginnen</button></div>
+    <div class="r">
+      <button type="button" class="btn pri" data-go="1" data-lesson="1">Mit Baustein 1 beginnen</button>
+      <button type="button" class="btn pri" data-go="3" data-lesson="2">Mit Baustein 3 beginnen</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Baustein 1 ===================== -->
+<section id="bs1" hidden>
+  <p class="kicker">Stunde 1 · Baustein 1</p>
+  <h1>Aufbau des Auges</h1>
+  <p class="lead txt">Das Modell zeigt ein Auge, aus dem ein Stück herausgeschnitten ist. So kannst du hineinsehen. Vorn liegt die durchsichtige Wölbung – von dort kommt das Licht.</p>
+
+  <h2><span class="tno">Aufgabe</span>Erkunde das Augenmodell<span class="tdone" id="b1done" hidden>✓ erledigt</span></h2>
+  <p class="txt">Drehe das Modell mit dem Finger. Tippe auf die Symbole <span class="plus" aria-hidden="true">+</span>. Dort erfährst du, wie die Struktur heißt und welche Aufgabe sie hat. Finde alle 13 Strukturen.</p>
+
+  <div class="b1grid">
+    <div class="figwrap">
+      <div class="m3" id="m3">
+        <canvas id="eye3d" role="img" aria-label="Drehbares 3D-Modell eines aufgeschnittenen Auges"></canvas>
+        <svg id="eyeFig" viewBox="135 100 480 360" role="img" aria-label="Schnittbild des Auges" hidden>
+          <g transform="translate(372 280)">
+            <use href="#eyeBase"/>
+            <g id="b1hs">
+              <g class="hs" data-id="glas"><path d="M-59.6 -112.1 A127 127 0 1 1 -59.6 112.1 L-84 80 L-96 58 A24 58 0 0 0 -96 -58 L-84 -80 Z"/></g>
+              <g class="hs" data-id="leder"><path d="M-118.2 -92.3 A150 150 0 1 1 -118.2 92.3 L-111.1 86.8 A141 141 0 1 0 -111.1 -86.8 Z"/></g>
+              <g class="hs" data-id="ader"><path d="M-74.7 -119.6 A141 141 0 1 1 -74.7 119.6 L-71 113.6 A134 134 0 1 0 -71 -113.6 Z"/></g>
+              <g class="hs" data-id="netz"><path d="M-62.9 -118.3 A134 134 0 1 1 -62.9 118.3 L-59.6 112.1 A127 127 0 1 0 -59.6 -112.1 Z"/></g>
+              <g class="hs" data-id="kammer"><path d="M-111.1 -86.8 A96.06 96.06 0 0 0 -111.1 86.8 L-113 85 L-128 26 L-128 -26 L-113 -85 Z"/></g>
+              <g class="hs" data-id="linse"><ellipse cx="-96" cy="0" rx="24" ry="58"/></g>
+              <g class="hs" data-id="hornhaut"><path d="M-118.2 -92.3 A102.6 102.6 0 0 0 -118.2 92.3 L-111.1 86.8 A96.06 96.06 0 0 1 -111.1 -86.8 Z"/></g>
+              <g class="hs" data-id="ziliar"><path d="M-111.1 -86.8 L-98 -70 Q-84 -84 -71 -113.6 L-74.7 -119.6 A141 141 0 0 0 -111.1 -86.8 Z"/><path d="M-111.1 86.8 L-98 70 Q-84 84 -71 113.6 L-74.7 119.6 A141 141 0 0 1 -111.1 86.8 Z"/></g>
+              <g class="hs" data-id="iris"><path d="M-113 -85 L-128 -26 Q-126 -21 -121 -24 L-104 -80 Z"/><path d="M-113 85 L-128 26 Q-126 21 -121 24 L-104 80 Z"/></g>
+              <g class="hs" data-id="pupille"><ellipse cx="-124" cy="0" rx="5" ry="21"/></g>
+              <g class="hs" data-id="sehnerv"><path d="M146.7 33.9 L196.1 50 L188.1 74.8 L138.7 58.7 Z"/></g>
+              <g class="hs" data-id="gelb"><path d="M133.7 -9.3 A134 134 0 0 1 133.7 9.3 L126.7 8.9 Q131 0 126.7 -8.9 Z"/></g>
+              <g class="hs" data-id="blind"><ellipse cx="121" cy="39.2" rx="5" ry="12" transform="rotate(18 121 39.2)"/></g>
+            </g>
+          </g>
+          <text x="145" y="450" font-size="13" style="fill:#4d5956">← vorn · hinten →</text>
+        </svg>
+        <div class="hsl" id="hsLayer"></div>
+        <div class="hname" id="hsName" hidden></div>
+        <div class="m3hint" id="m3hint">Mit dem Finger drehen</div>
+        <div class="m3tools" id="m3tools">
+          <button type="button" class="btn" data-view="cut">Aufgeschnitten</button>
+          <button type="button" class="btn" data-view="front">Von vorn</button>
+          <button type="button" class="btn" data-view="back">Von hinten</button>
+          <button type="button" class="btn" id="modeBtn">Schnittbild (2D)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dock" id="b1dock">
+      <div class="prog"><span id="b1progLbl">0 von 13 Strukturen gefunden</span><div class="bar" aria-hidden="true"><div class="bar-in" id="b1bar"></div></div></div>
+      <div class="info" id="b1infoBody" aria-live="polite"></div>
+      <div class="solwrap" id="b1nextWrap"><button type="button" class="btn" id="b1next">Fehlende Struktur zeigen</button></div>
+      <div class="fb" id="b1fb" role="status" aria-live="polite" hidden></div>
+    </div>
+  </div>
+
+  <div class="ws" id="b1wsBox">
+    <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Aufgabe 1 und 2</div>
+    <div class="ws-b">
+      <p><strong>Aufgabe 1:</strong> Vergleiche das Modell mit der Zeichnung und trage die Namen der 13 Strukturen ein. Die Ansicht „Schnittbild (2D)“ hilft dir beim Vergleichen.</p>
+      <p><strong>Aufgabe 2:</strong> Notiere für die acht Strukturen in der Tabelle, welche Aufgabe sie haben. Schreibe Stichworte, keine ganzen Sätze.</p>
+      <details class="q" style="margin-top:0"><summary>Vergleichslösung zu Aufgabe 2 aufklappen</summary><div class="a"><ul id="b1wsList"></ul></div></details>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button type="button" class="btn" data-go="0">Zurück</button>
+    <div class="r"><p class="lockmsg" id="lock1"></p><button type="button" class="btn pri" id="next1" data-go="2">Weiter zu Baustein 2</button></div>
+  </div>
+</section>
+
+<!-- ===================== Baustein 2 ===================== -->
+<section id="bs2" hidden>
+  <p class="kicker">Stunde 1 · Baustein 2</p>
+  <h1>Der Weg des Lichts</h1>
+  <p class="lead txt">Damit du etwas siehst, muss Licht von einem Gegenstand in dein Auge fallen. Im Auge durchquert es mehrere Stationen.</p>
+
+  <h2><span class="tno">Aufgabe 1</span>Bringe die Stationen in die richtige Reihenfolge<span class="tdone" id="b2t1done" hidden>✓ erledigt</span></h2>
+  <p class="txt">Oben steht die Station, die das Licht zuerst erreicht. Ziehe die Karten an die richtige Stelle (oder nutze die Pfeile) und tippe dann auf „Prüfen“.</p>
+  <div class="sortwrap">
+    <ol class="sortnums" aria-hidden="true"><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li><li>8</li></ol>
+    <div class="sortlist" id="sortList"></div>
+  </div>
+  <div class="row" style="margin-top:14px">
+    <button type="button" class="btn pri" id="sortCheck">Prüfen</button>
+    <button type="button" class="btn" id="sortSol" hidden>Lösung anzeigen</button>
+  </div>
+  <div class="fb" id="sortFb" role="status" aria-live="polite" hidden style="max-width:46em"></div>
+
+  <div id="b2rest" hidden>
+    <div class="ws" style="margin-top:18px">
+      <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Aufgabe 3</div>
+      <div class="ws-b"><p>Trage die acht Stationen in der richtigen Reihenfolge ein.</p></div>
+    </div>
+    <h2><span class="tno">Ansehen</span>Das Licht auf seinem Weg</h2>
+    <p class="txt">Starte die Animation. Du kannst jederzeit anhalten.</p>
+    <div class="figwrap">
+      <svg id="animFig" class="fig" viewBox="-285 -170 630 340" role="img" aria-label="Animation: Ein Lichtstrahl läuft durch das Auge zur Netzhaut, ein Signal läuft über den Sehnerv zum Gehirn">
+        <use href="#eyeBase"/>
+        <path d="M192.1 62.4 L258 88" stroke="#c9b25a" stroke-width="11" stroke-dasharray="3 5" fill="none"/>
+        <path d="M258 96 C254 78 268 62 286 64 C296 54 318 56 324 70 C338 76 338 98 326 106 C322 118 304 122 296 114 C290 124 272 124 268 114 C260 112 257 104 258 96 Z" fill="#f1dcd5" stroke="#3b4442" stroke-width="1.5"/>
+        <path d="M276 76 C284 80 286 90 280 98 M300 68 C296 78 304 86 312 84 M292 100 C300 98 308 102 312 108" fill="none" stroke="#3b4442" stroke-width="1.2"/>
+        <text x="294" y="146" text-anchor="middle" class="figlbl">Gehirn</text>
+        <g stroke="#d27d00" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="-268" cy="0" r="6" fill="#d27d00" stroke="none"/>
+          <path d="M-268 -11 V-16 M-268 11 V16 M-279 0 H-283 M-276 -8 L-279.5 -11.5 M-276 8 L-279.5 11.5" fill="none"/>
+        </g>
+        <polyline id="animLight" class="ray-light" points=""/>
+        <polyline id="animSig" class="ray-sig" points=""/>
+        <circle id="animDot" r="7" cx="-262" cy="0" fill="#d27d00" stroke="#fff" stroke-width="2"/>
+        <text id="animLbl" class="halo" text-anchor="middle" font-size="17" font-weight="700" x="-200" y="-18"></text>
+      </svg>
+    </div>
+    <div class="legend">
+      <span><svg viewBox="0 0 44 10"><line x1="2" y1="5" x2="42" y2="5" class="ray-light"/></svg>Licht</span>
+      <span><svg viewBox="0 0 44 10"><line x1="2" y1="5" x2="42" y2="5" class="ray-sig"/></svg>elektrisches Signal</span>
+    </div>
+    <div class="animstat" id="animStat" aria-live="polite"></div>
+    <div class="row">
+      <button type="button" class="btn pri" id="animStart"><svg><use href="#ic-play"/></svg><span>Start</span></button>
+      <button type="button" class="btn" id="animPause"><svg><use href="#ic-pause"/></svg>Pause</button>
+      <button type="button" class="btn" id="animReset"><svg><use href="#ic-replay"/></svg>Wiederholen</button>
+    </div>
+
+    <h2><span class="tno">Ausprobieren</span>Welches Bild entsteht auf der Netzhaut?</h2>
+    <div class="txt">
+      <p>Hornhaut und Linse <strong>brechen</strong> das Licht. Das heißt: Die Lichtstrahlen ändern dort ihre Richtung. Die Abbildung zeigt zwei Strahlen – einen von der Spitze und einen vom Fuß des Pfeils.</p>
+      <p>Verschiebe den Gegenstand mit dem Regler. Beobachte das Bild auf der Netzhaut: Was ändert sich? Was bleibt immer gleich?</p>
+    </div>
+    <div class="figwrap wide">
+      <svg id="rayFig" class="fig" viewBox="0 0 900 440" role="img" aria-label="Strahlengang: Vom Gegenstand laufen zwei Lichtstrahlen ins Auge, kreuzen sich und erzeugen auf der Netzhaut ein umgekehrtes, verkleinertes Bild">
+        <line x1="22" y1="22" x2="66" y2="22" stroke="#d27d00" stroke-width="3.5"/>
+        <text x="76" y="28" class="figlbl">Lichtstrahl von der Spitze</text>
+        <line x1="22" y1="48" x2="66" y2="48" stroke="#2b4f8c" stroke-width="3.5" stroke-dasharray="9 6"/>
+        <text x="76" y="54" class="figlbl">Lichtstrahl vom Fuß</text>
+        <g transform="translate(765 165) scale(0.85)">
+          <line x1="-895" y1="0" x2="127" y2="0" stroke="#9aa5a1" stroke-width="1.2" stroke-dasharray="4 6"/>
+          <use href="#eyeBase"/>
+          <polyline id="rayTip" points="" fill="none" stroke="#d27d00" stroke-width="3.5" stroke-linejoin="round"/>
+          <polyline id="rayFoot" points="" fill="none" stroke="#2b4f8c" stroke-width="3.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+          <g id="rayObj"></g>
+          <g id="rayImg"></g>
+          <circle id="rayRing" cx="124" cy="0" r="40" fill="none" stroke="#17594f" stroke-width="2" stroke-dasharray="3 4"/>
+        </g>
+        <text id="rayObjLbl" x="300" y="240" text-anchor="middle" class="figlbl">Gegenstand</text>
+        <circle cx="450" cy="366" r="64" fill="#fff" stroke="#17594f" stroke-width="2" stroke-dasharray="3 4"/>
+        <g id="lupeImg" transform="translate(450 366)"></g>
+        <text x="372" y="360" text-anchor="end" class="figlbl" font-weight="700">Bild auf der Netzhaut</text>
+        <text x="372" y="384" text-anchor="end" class="figlbl">(vergrößert gezeichnet)</text>
+        <text x="530" y="372" class="figlbl">Die Spitze zeigt nach unten.</text>
+      </svg>
+    </div>
+    <p class="figcap">Vereinfachte Darstellung, nicht maßstabsgetreu.</p>
+    <div class="slider">
+      <label for="raySl">Abstand des Gegenstands</label>
+      <input type="range" id="raySl" min="240" max="680" step="10" value="460">
+      <div class="ends"><span>nah</span><span>fern</span></div>
+    </div>
+    <details class="q">
+      <summary>Beobachtung prüfen</summary>
+      <div class="a"><p>Je weiter der Gegenstand entfernt ist, desto kleiner ist sein Bild auf der Netzhaut. Zwei Dinge bleiben immer gleich: Das Bild steht auf dem Kopf, und es ist kleiner als der Gegenstand.</p></div>
+    </details>
+
+    <div class="think"><p>Zum Nachdenken: Warum sehen wir die Welt trotzdem nicht auf dem Kopf?</p></div>
+    <details class="q">
+      <summary>Antwort aufklappen</summary>
+      <div class="a"><p>Das Bild auf der Netzhaut steht tatsächlich auf dem Kopf. Dein Gehirn dreht das Bild bei der Verarbeitung um, sodass du die Welt aufrecht wahrnimmst. Das hat es schon gelernt, als du ein Säugling warst.</p></div>
+    </details>
+
+    <div class="ws">
+      <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Aufgabe 4</div>
+      <div class="ws-b">
+        <p><strong>a) und b):</strong> Zeichne den Lichtstrahl vom Fuß des Gegenstands und das Bild auf der Netzhaut ein.</p>
+        <p><strong>c):</strong> Vervollständige die Sätze.</p>
+        <details class="q" style="margin-top:0"><summary>Vergleichslösung aufklappen</summary><div class="a"><p>a) Der Strahl vom Fuß verläuft spiegelbildlich zum Strahl von der Spitze. Er trifft oberhalb der Mitte auf die Netzhaut.</p><p>b) Das Bild ist ein kleiner Pfeil. Seine Spitze zeigt nach unten.</p><p>c) Linse – umgekehrt – verkleinert – Gehirn</p></div></details>
+      </div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button type="button" class="btn" data-go="1">Zurück</button>
+    <div class="r"><p class="lockmsg" id="lock2"></p><button type="button" class="btn" data-go="0">Zur Übersicht</button></div>
+  </div>
+</section>
+
+<!-- ===================== Baustein 3 ===================== -->
+<section id="bs3" hidden>
+  <p class="kicker">Stunde 2 · Baustein 3</p>
+  <h1>Warum verschwindet der Punkt?</h1>
+  <p class="lead txt">Im Versuch ist der Punkt verschwunden, obwohl er die ganze Zeit auf der Karte war. In diesem Baustein prüfst du eine Vermutung, woran das liegt.</p>
+  <div class="ws" style="margin-top:14px">
+    <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Aufgabe 1</div>
+    <div class="ws-b"><p>Beschreibe zuerst in ein bis zwei Sätzen, was du im Versuch mit der Karte beobachtet hast. Schreibe nur auf, was du gesehen hast – noch keine Erklärung.</p></div>
+  </div>
+
+  <h2><span class="tno">Schritt 1</span>Aus einer Vermutung eine Vorhersage ableiten</h2>
+  <p class="txt">Zwei mögliche Erklärungen für das Verschwinden:</p>
+  <div class="hyp">
+    <div><strong>Vermutung A</strong><p>Der Punkt verschwindet, wenn sein Bild auf eine bestimmte Stelle der Netzhaut fällt, mit der man nichts sieht.</p></div>
+    <div><strong>Vermutung B</strong><p>Der Punkt verschwindet, weil er dem Auge zu nah ist.</p></div>
+  </div>
+  <p class="txt" style="margin-top:14px">Wenn eine Vermutung stimmt, kann man daraus eine <strong>Vorhersage</strong> ableiten. Ein Versuch zeigt dann, ob die Vorhersage eintrifft.</p>
+  <div class="think"><p>Stell dir vor, der Punkt ist doppelt so weit vom Kreuz entfernt: 8 cm statt 4 cm. Was sagt Vermutung A für diesen Fall voraus?</p></div>
+  <details class="q">
+    <summary>Tipp</summary>
+    <div class="a"><p>Denk an den Strahlengang aus der letzten Stunde: Das Licht vom Punkt fällt durch die Pupille auf die Netzhaut. Je schräger das Licht ins Auge fällt, desto weiter außen landet sein Bild.</p></div>
+  </details>
+  <div class="ws">
+    <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Aufgabe 2</div>
+    <div class="ws-b"><p>Trage Vermutung A in die Tabelle ein. Notiere dann deine eigene Vorhersage und begründe sie in einem Satz.</p></div>
+  </div>
+  <div class="pst"><div class="pst-h"><svg><use href="#ic-pair"/></svg>Partner-Stopp</div><div class="pst-b"><p>Vergleiche deine Vorhersage mit deiner Sitznachbarin oder deinem Sitznachbarn. Begründet euch gegenseitig, was ihr erwartet. Einigt euch auf eine Vorhersage.</p></div></div>
+  <button type="button" class="btn pri" id="g1Btn">Wir haben verglichen</button>
+  <div id="predWrap" hidden>
+  <p class="txt" style="margin-top:14px"><strong>Welche Vorhersage habt ihr gewählt?</strong></p>
+  <div class="mc" id="predMc">
+    <button type="button" data-v="gleich"><span class="mk" aria-hidden="true"></span><span>Der Punkt verschwindet beim gleichen Abstand zwischen Auge und iPad.</span></button>
+    <button type="button" data-v="weiter"><span class="mk" aria-hidden="true"></span><span>Der Punkt verschwindet schon, wenn das iPad weiter vom Auge entfernt ist.</span></button>
+    <button type="button" data-v="naeher"><span class="mk" aria-hidden="true"></span><span>Der Punkt verschwindet erst, wenn das iPad näher am Auge ist.</span></button>
+  </div>
+  <div class="fb" id="predFb" role="status" aria-live="polite" hidden style="max-width:46em;margin-bottom:12px"></div>
+  </div>
+
+  <div id="b3test" hidden>
+    <h2><span class="tno">Schritt 2</span>Die Vorhersage im Versuch prüfen</h2>
+    <ol class="steps3">
+      <li>Tippe auf „4 cm“. Halte das iPad gerade vor dein Gesicht, etwa eine Armlänge entfernt.</li>
+      <li>Schließe das <strong class="eyeClose">linke</strong> Auge. Schau mit dem <strong class="eyeOpen">rechten</strong> Auge genau auf das Kreuz.</li>
+      <li>Bewege das iPad langsam auf dein Gesicht zu. Merke dir ungefähr, wie weit es entfernt ist, wenn der Punkt verschwindet.</li>
+      <li>Tippe auf „8 cm“ und wiederhole den Versuch. Vergleiche die beiden Abstände.</li>
+    </ol>
+    <div class="row" style="margin-top:12px">
+      <button type="button" class="btn" id="exp4" aria-pressed="true">4 cm</button>
+      <button type="button" class="btn" id="exp8" aria-pressed="false">8 cm</button>
+      <span class="muted">Abstand zwischen Kreuz und Punkt: <strong id="expCm">4 cm</strong></span>
+    </div>
+    <div class="exp" id="exp" aria-label="Versuchsfeld mit Kreuz und Punkt">
+      <div class="expin" id="expIn">
+        <svg viewBox="0 0 28 28" aria-label="Kreuz"><path d="M14 2V26M2 14H26" stroke="#111" stroke-width="5" fill="none"/></svg>
+        <div id="expGap"></div>
+        <svg viewBox="0 0 28 28" aria-label="Punkt"><circle cx="14" cy="14" r="13" fill="#111"/></svg>
+      </div>
+    </div>
+    <div class="note">
+      <p><strong>Wichtig:</strong> Der Punkt verschwindet nur, wenn ein Auge geschlossen ist.</p>
+      <p style="margin:0">Klappt es nicht? Prüfe, ob du wirklich nur auf das Kreuz schaust, und bewege das iPad langsamer.</p>
+    </div>
+    <details class="q">
+      <summary>Abstand fein einstellen</summary>
+      <div class="a">
+        <div class="slider">
+          <label for="expSl">Abstand zwischen Kreuz und Punkt</label>
+          <input type="range" id="expSl" min="3" max="9" step="0.5" value="4">
+          <div class="ends"><span>3 cm</span><span>9 cm</span></div>
+        </div>
+      </div>
+    </details>
+
+    <div class="think"><p>Was hast du beobachtet? Bei 8 cm verschwand der Punkt …</p></div>
+    <div class="mc" id="obsMc">
+      <button type="button" data-v="weiter"><span class="mk" aria-hidden="true"></span><span>… schon, als das iPad weiter vom Auge entfernt war als bei 4 cm.</span></button>
+      <button type="button" data-v="gleich"><span class="mk" aria-hidden="true"></span><span>… bei ungefähr dem gleichen Abstand wie bei 4 cm.</span></button>
+      <button type="button" data-v="naeher"><span class="mk" aria-hidden="true"></span><span>… erst, als das iPad näher am Auge war als bei 4 cm.</span></button>
+      <button type="button" data-v="nie"><span class="mk" aria-hidden="true"></span><span>Der Punkt ist gar nicht verschwunden.</span></button>
+    </div>
+    <div class="fb" id="obsFb" role="status" aria-live="polite" hidden style="max-width:46em"></div>
+  </div>
+
+  <div id="b3rest" hidden>
+    <div class="ws">
+      <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Aufgabe 2</div>
+      <div class="ws-b">
+        <p>Trage das Ergebnis deines Versuchs in die Tabelle ein. Passt es zur Vorhersage?</p>
+        <details class="q" style="margin-top:0"><summary>Vergleichslösung aufklappen</summary><div class="a"><p><strong>Vermutung:</strong> Der Punkt verschwindet, wenn sein Bild auf eine bestimmte Stelle der Netzhaut fällt.</p><p><strong>Vorhersage:</strong> Ist der Punkt weiter vom Kreuz entfernt, verschwindet er schon bei größerem Abstand zwischen Auge und iPad.</p><p><strong>Ergebnis:</strong> Die Vorhersage trifft zu. Das stützt die Vermutung.</p></div></details>
+      </div>
+    </div>
+
+    <h2><span class="tno">Schritt 3</span>Im Modell nachvollziehen</h2>
+    <p class="txt">Das Modell zeigt dein rechtes Auge von oben. Verändere den Abstand zwischen Auge und iPad, bis der Punkt verschwindet. Auf welche Stelle der Netzhaut fällt sein Bild dann?</p>
+    <div class="figwrap wide">
+      <svg id="simFig" class="fig" viewBox="0 0 900 380" role="img" aria-label="Modell: rechtes Auge von oben. Lichtstrahlen vom Kreuz und vom Punkt fallen durch die Pupille auf die Netzhaut.">
+        <circle cx="780" cy="190" r="70" fill="#fbfaf6" stroke="#3b4442" stroke-width="1.5"/>
+        <circle cx="780" cy="190" r="60" fill="#edf3f4"/>
+        <path id="simRet1" fill="none" stroke="#e2b866" stroke-width="7"/>
+        <path id="simRet2" fill="none" stroke="#e2b866" stroke-width="7"/>
+        <polygon id="simNerve" fill="#ecd98a" stroke="#a58a2c" stroke-width="1.2"/>
+        <path d="M719.4 155 A40 40 0 0 0 719.4 225" fill="#d7e7ee" stroke="#3b4442" stroke-width="1.5"/>
+        <path d="M726 155V178M726 202V225" stroke="#5f86a0" stroke-width="5" fill="none"/>
+        <ellipse cx="735" cy="190" rx="8" ry="21" fill="#d7e7ee" stroke="#3b4442" stroke-width="1.3"/>
+        <circle cx="843" cy="190" r="5" fill="#f2c200" stroke="#3b4442" stroke-width="1"/>
+        <line x1="843" y1="116" x2="843" y2="184" stroke="#55605d" stroke-width="1.2"/>
+        <text x="843" y="108" text-anchor="middle" font-size="15">Gelber Fleck</text>
+        <line x1="818" y1="272" x2="836" y2="219" stroke="#55605d" stroke-width="1.2"/>
+        <text id="simBsLbl" x="812" y="290" text-anchor="middle" font-size="15">Austritt des Sehnervs</text>
+        <text id="simNvLbl" x="898" y="262" text-anchor="end" font-size="15">Sehnerv</text>
+        <text x="760" y="316" text-anchor="middle" font-size="15" font-weight="700">rechtes Auge</text>
+                <polyline id="simRayX" fill="none" stroke="#1b2624" stroke-width="2" stroke-dasharray="6 5"/>
+        <polyline id="simRayP" fill="none" stroke="#d27d00" stroke-width="3" stroke-linejoin="round"/>
+        <g id="simHitOk"><circle r="8" fill="#1f6f43" stroke="#fff" stroke-width="1.5"/><path d="M-4 0.5L-1 3.5L4.5 -3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="simHitNo"><circle r="8" fill="#9c3d1b" stroke="#fff" stroke-width="1.5"/><path d="M-3.5 -3.5L3.5 3.5M3.5 -3.5L-3.5 3.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+        <g id="simPad">
+          <rect x="-7" y="72" width="14" height="236" rx="4" fill="#e9ecea" stroke="#3b4442" stroke-width="1.2"/>
+          <path d="M0 181V199M-9 190H9" stroke="#111" stroke-width="3.5"/>
+          <circle id="simDot" cx="0" cy="146" r="7" fill="#111" stroke="#111" stroke-width="2"/>
+          <text x="0" y="62" text-anchor="middle" font-size="16" font-weight="700">iPad</text>
+          <text x="-16" y="196" text-anchor="end" font-size="15">Kreuz</text>
+          <text id="simDotLbl" x="-16" y="151" text-anchor="end" font-size="15">Punkt</text>
+        </g>
+        <path id="simDim" fill="none" stroke="#55605d" stroke-width="1.3"/>
+        <text id="simDimTxt" y="364" text-anchor="middle" font-size="16"></text>
+      </svg>
+    </div>
+    <p class="figcap">Rechtes Auge von oben gesehen, die Nase liegt unten. Das Auge ist stark vergrößert gezeichnet, die Winkel der Lichtstrahlen stimmen.</p>
+    <div class="row" style="margin-top:10px">
+      <button type="button" class="btn" id="simS4" aria-pressed="true">Punkt 4 cm neben dem Kreuz</button>
+      <button type="button" class="btn" id="simS8" aria-pressed="false">Punkt 8 cm neben dem Kreuz</button>
+    </div>
+    <div class="slider">
+      <label for="simD">Abstand zwischen Auge und iPad: <span id="simDLbl">40 cm</span></label>
+      <input type="range" id="simD" min="10" max="60" step="0.5" value="40">
+      <div class="ends"><span>10 cm</span><span>60 cm</span></div>
+    </div>
+    <div class="fb" id="simOut" aria-live="polite" style="max-width:46em"></div>
+    <ul class="found" id="simFound"></ul>
+    <details class="q">
+      <summary>Warum ist der Abstand bei 8 cm größer?</summary>
+      <div class="a"><p>Das Bild des Punktes muss genau auf die Stelle fallen, an der der Sehnerv das Auge verlässt. Dafür muss das Licht vom Punkt in einem bestimmten Winkel ins Auge fallen. Liegt der Punkt weiter vom Kreuz entfernt, entsteht dieser Winkel erst bei größerem Abstand. Ist der Punkt doppelt so weit vom Kreuz entfernt, ist auch der Abstand zum Auge etwa doppelt so groß.</p></div>
+    </details>
+
+    <h2><span class="tno">Schritt 4</span>Was ist an dieser Stelle anders?</h2>
+    <p class="txt">Im Modell fällt das Bild des Punktes auf die Stelle, an der der Sehnerv das Auge verlässt. Die Abbildung zeigt diese Stelle stark vergrößert.</p>
+    <div class="figwrap wide">
+    <svg id="bfFig" class="fig" viewBox="0 0 860 400" role="img" aria-label="Netzhaut an der Austrittsstelle des Sehnervs: Die Nervenfasern verlaufen auf der Lichtseite der Netzhaut und verlassen gebündelt als Sehnerv das Auge. Dort liegen keine Sehzellen.">
+      <defs>
+        <pattern id="cellPat" x="666" y="46" width="30" height="12" patternUnits="userSpaceOnUse"><rect x="2" y="3" width="24" height="6" rx="3" fill="#2f6f8f"/></pattern>
+        <clipPath id="detClip"><rect x="440" y="30" width="410" height="300" rx="6"/></clipPath>
+      </defs>
+      <text x="190" y="22" text-anchor="middle" class="figlbl" font-weight="700">Übersicht</text>
+      <text x="645" y="22" text-anchor="middle" class="figlbl" font-weight="700">Ausschnitt, stark vergrößert</text>
+      <g transform="translate(205 190)">
+        <use href="#eyeBase"/>
+        <g class="s3">
+          <polyline points="-205,-30 -172,-21 -96,2 117,38.5" class="ray-light"/>
+          <polygon points="18,21.5 1,25.7 3.4,11.9" fill="#d27d00"/>
+        </g>
+        <circle cx="121" cy="39.2" r="24" fill="none" stroke="#17594f" stroke-width="2.5" stroke-dasharray="4 4"/>
+      </g>
+      <line x1="322" y1="205.5" x2="440" y2="30" stroke="#7b8683" stroke-width="1.2"/>
+      <line x1="330" y1="253" x2="440" y2="330" stroke="#7b8683" stroke-width="1.2"/>
+      <text class="figlbl s2" x="190" y="368" text-anchor="middle">Hier verlässt der Sehnerv das Auge.</text>
+      <g clip-path="url(#detClip)">
+        <rect x="440" y="30" width="210" height="300" fill="#edf3f4"/>
+        <rect x="650" y="30" width="50" height="300" fill="#f2d7a0"/>
+        <rect x="700" y="30" width="30" height="300" fill="#b9614d"/>
+        <rect x="730" y="30" width="40" height="300" fill="#fbfaf6"/>
+        <rect x="770" y="30" width="80" height="300" fill="#fff"/>
+        <rect x="650" y="30" width="10" height="300" fill="#ecd98a"/>
+        <rect x="666" y="46" width="30" height="108" fill="url(#cellPat)"/>
+        <rect x="666" y="250" width="30" height="72" fill="url(#cellPat)"/>
+        <rect x="650" y="160" width="200" height="80" fill="#ecd98a"/>
+        <path d="M650 30V330M660 30V160M660 240V330M700 30V160M700 240V330M730 30V160M730 240V330M770 30V160M770 240V330M660 160H850M660 240H850" fill="none" stroke="#3b4442" stroke-width="1.3"/>
+        <path d="M653.5 30V132Q653.5 172 700 174H850M657 30V140Q657 184 705 186H850M653.5 330V268Q653.5 228 700 226H850M657 330V260Q657 216 705 214H850M700 200H850" fill="none" stroke="#a58a2c" stroke-width="1.2"/>
+        <g class="s2"><rect x="661" y="157" width="42" height="86" fill="none" stroke="#9c3d1b" stroke-width="2.5" stroke-dasharray="6 4"/></g>
+        <g class="s3">
+          <line x1="446" y1="112" x2="664" y2="112" class="ray-light"/>
+          <polygon points="566,112 550,104 550,120" fill="#d27d00"/>
+          <circle cx="669" cy="112" r="7" fill="#d27d00" stroke="#fff" stroke-width="1.5"/>
+          <path d="M662 116 Q657 120 657 140 Q657 184 705 186 H838" class="ray-sig" style="stroke-width:3"/>
+          <polygon points="848,186 834,179 834,193" fill="#4a3f9a"/>
+          <line x1="446" y1="200" x2="686" y2="200" class="ray-light"/>
+          <polygon points="566,200 550,192 550,208" fill="#d27d00"/>
+          <path d="M688 192L704 208M704 192L688 208" stroke="#9c3d1b" stroke-width="4" stroke-linecap="round" fill="none"/>
+        </g>
+      </g>
+      <rect x="440" y="30" width="410" height="300" rx="6" fill="none" stroke="#3b4442" stroke-width="1.5"/>
+      <text x="448" y="64" class="figlbl halo">Sehzellen</text>
+      <line x1="528" y1="58" x2="666" y2="58" stroke="#55605d" stroke-width="1.2"/>
+      <text x="812" y="150" text-anchor="middle" class="figlbl halo">Sehnerv</text>
+      <g class="s2">
+        <text x="448" y="292" class="figlbl halo" font-weight="700">keine Sehzellen</text>
+        <line x1="578" y1="284" x2="661" y2="238" stroke="#9c3d1b" stroke-width="1.5"/>
+      </g>
+      <g class="s3">
+        <text x="448" y="100" class="figlbl halo">Sehzellen getroffen: Signal</text>
+        <text x="448" y="188" class="figlbl halo" font-weight="700">Blinder Fleck: kein Signal</text>
+        <text x="812" y="264" text-anchor="middle" class="figlbl halo">zum Gehirn</text>
+      </g>
+      <g class="s1"><text x="448" y="320" class="figlbl halo" font-weight="700">Nervenfasern</text><line x1="560" y1="313" x2="652" y2="298" stroke="#55605d" stroke-width="1.2"/></g>
+      <path d="M675 330V338M760 330V338M715 330V362" stroke="#55605d" stroke-width="1.2" fill="none"/>
+      <text x="672" y="354" text-anchor="middle" font-size="16">Netzhaut</text>
+      <text x="768" y="354" text-anchor="middle" font-size="16">Lederhaut</text>
+      <text x="715" y="378" text-anchor="middle" font-size="16">Aderhaut</text>
+    </svg>
+  </div>
+    <div class="pst"><div class="pst-h"><svg><use href="#ic-pair"/></svg>Partner-Stopp</div><div class="pst-b"><p>Überlege zuerst allein: Was ist an dieser Stelle anders als an der übrigen Netzhaut?</p><p>Sobald deine Sitznachbarin oder dein Sitznachbar auch so weit ist: Erklärt euch gegenseitig, warum der Punkt verschwindet, wenn sein Bild genau dorthin fällt. Schreibt eure Erklärung auf (Arbeitsblatt, Aufgabe 3 a).</p><details class="q" style="margin-top:0"><summary>Tipp</summary><div class="a"><p>Vergleiche in der Abbildung: Wo liegen Sehzellen, wo nicht? Aus der letzten Stunde weißt du, was Sehzellen mit dem Licht machen.</p></div></details></div></div>
+    <button type="button" class="btn pri" id="g4Btn">Erklärung notiert – zum Vergleich aufdecken</button>
+    <div id="b3stepWrap" hidden>
+    <p class="txt" style="margin-top:14px">Deckt die Erklärung Schritt für Schritt auf und vergleicht sie mit eurer eigenen. Die Abbildung verändert sich mit.</p>
+    <div id="b3steps">
+      <div class="estep" data-n="1" hidden><strong>1.</strong> Die Sehzellen geben ihre Signale an Nervenfasern weiter. Diese Fasern verlaufen auf der Innenseite der Netzhaut – also auf der Seite, von der das Licht kommt.</div>
+      <div class="estep" data-n="2" hidden><strong>2.</strong> An einer Stelle werden alle Fasern gebündelt und verlassen als Sehnerv das Auge. Dort liegen keine Sehzellen. Diese Stelle heißt Blinder Fleck.</div>
+      <div class="estep" data-n="3" hidden><strong>3.</strong> Licht, das genau dort auftrifft, löst kein Signal aus. Im Sehfeld entsteht eine Lücke – der Punkt ist „weg“.</div>
+    </div>
+    <button type="button" class="btn pri" id="b3stepBtn" style="margin-top:6px">Schritt 1 aufdecken</button>
+    </div>
+    <div class="ws" id="b3ws2" hidden>
+      <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Aufgabe 3</div>
+      <div class="ws-b">
+        <p><strong>a)</strong> Verbessert eure Erklärung, falls etwas fehlt oder nicht stimmt.</p>
+        <p><strong>b)</strong> Beschrifte die Abbildung.</p>
+        <details class="q" style="margin-top:0"><summary>Vergleichslösung aufklappen</summary><div class="a"><p>a) Die Nervenfasern verlaufen auf der Lichtseite der Netzhaut. Am Blinden Fleck verlassen sie gebündelt als Sehnerv das Auge. Dort liegen keine Sehzellen. Fällt das Bild des Punktes genau auf diese Stelle, löst das Licht kein Signal aus. Der Punkt ist dann nicht zu sehen.</p><p>b) 1 Sehzellen · 2 Nervenfasern · 3 Sehnerv · 4 Stelle ohne Sehzellen (Blinder Fleck)</p></div></details>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note" id="b3end" hidden style="margin-top:26px">
+    <p style="margin:0"><strong>Der Pflichtteil ist geschafft.</strong> Prüfe, ob die Aufgaben 1 bis 3 auf deinem Arbeitsblatt vollständig sind. Wenn du noch Zeit hast, kannst du den Zusatz bearbeiten.</p>
+  </div>
+  <div class="bnav">
+    <button type="button" class="btn" data-go="0">Zurück</button>
+    <div class="r"><p class="lockmsg" id="lock3"></p><button type="button" class="btn" id="next3" data-go="4">Zusatz für Schnelle</button></div>
+  </div>
+</section>
+
+<!-- ===================== Baustein 4 ===================== -->
+<section id="bs4" hidden>
+  <p class="extra">Zusatz für Schnelle – kein Pflichtteil</p>
+  <h1>Zusatz für Schnelle</h1>
+
+  <h2><span class="tno">Teil A</span>Warum bemerkst du im Alltag kein Loch in deinem Sichtfeld?</h2>
+  <p class="txt">Jedes Auge hat einen Blinden Fleck. Trotzdem siehst du nirgends eine Lücke. Schreibe deine Vermutung auf und vergleiche sie danach mit der Musterlösung.</p>
+  <label for="b3txt" class="muted" style="display:block;margin-bottom:4px">Deine Antwort</label>
+  <textarea id="b3txt" autocomplete="off"></textarea>
+  <div class="row" style="margin-top:12px"><button type="button" class="btn pri" id="b3solBtn">Mit Musterlösung vergleichen</button></div>
+  <div class="fb" id="b3fb" role="status" hidden style="max-width:46em"></div>
+  <div class="note" id="b3sol" hidden>
+    <p><strong>Musterlösung:</strong> Im Alltag fällt die Lücke aus zwei Gründen nicht auf.</p>
+    <p>1. Du siehst mit beiden Augen. Die Lücke liegt bei jedem Auge an einer anderen Stelle des Sehfeldes. Was dem einen Auge fehlt, sieht das andere.</p>
+    <p>2. Dein Gehirn ergänzt die Lücke mit dem, was in der Umgebung zu sehen ist. Im Versuch hast du deshalb statt des Punktes einfach weiße Fläche gesehen.</p>
+    <p style="margin-bottom:4px"><strong>Vergleiche mit deiner Antwort:</strong></p>
+    <label class="chk"><input type="checkbox" id="b3c1"><span>Ich habe genannt, dass sich beide Augen ergänzen.</span></label>
+    <label class="chk"><input type="checkbox" id="b3c2"><span>Ich habe genannt, dass das Gehirn die Lücke ergänzt.</span></label>
+  </div>
+  <div class="ws">
+    <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Zusatz A</div>
+    <div class="ws-b"><p>Notiere die zwei Gründe in eigenen Worten.</p></div>
+  </div>
+
+  <h2 style="margin-top:44px"><span class="tno">Teil B</span>Und das linke Auge?</h2>
+  <p class="txt">Im Versuch hast du mit dem rechten Auge auf das Kreuz geschaut. Der Punkt lag rechts vom Kreuz. Jetzt geht es um das linke Auge.</p>
+  <div class="think"><p>Du schließt das rechte Auge und schaust mit dem linken auf das Kreuz. Wo muss der Punkt liegen, damit er verschwinden kann?</p></div>
+  <div class="mc" id="lpMc">
+    <button type="button" data-v="rechts"><span class="mk" aria-hidden="true"></span><span>Rechts vom Kreuz – wie beim rechten Auge.</span></button>
+    <button type="button" data-v="links"><span class="mk" aria-hidden="true"></span><span>Links vom Kreuz.</span></button>
+    <button type="button" data-v="beide"><span class="mk" aria-hidden="true"></span><span>Egal – er verschwindet auf beiden Seiten.</span></button>
+  </div>
+  <div class="fb" id="lpFb" role="status" aria-live="polite" hidden style="max-width:46em;margin-bottom:12px"></div>
+  <details class="q">
+    <summary>Tipp</summary>
+    <div class="a">
+      <p>Zwei Dinge weißt du schon:</p>
+      <p>1. Der Sehnerv verlässt jedes Auge auf der Seite zur Nase hin. Das hast du im Modell in Baustein 3 gesehen.</p>
+      <p>2. Das Bild auf der Netzhaut steht auf dem Kopf. Dabei ist es auch seitenverkehrt: Was links liegt, wird rechts abgebildet.</p>
+    </div>
+  </details>
+
+  <div id="lTest" hidden>
+    <h3 style="margin-top:20px">Prüfe deine Vorhersage – mit Gegenprobe</h3>
+    <ol class="steps3">
+      <li>Schließe das <strong>rechte</strong> Auge. Schau mit dem <strong>linken</strong> Auge genau auf das Kreuz.</li>
+      <li>Bewege das iPad langsam auf dein Gesicht zu. Achte auf den Punkt.</li>
+      <li>Gegenprobe: Schließe jetzt das <strong>linke</strong> Auge und schau mit dem <strong>rechten</strong> auf das Kreuz. Bewege das iPad wieder langsam heran.</li>
+    </ol>
+    <div class="exp" aria-label="Versuchsfeld: Punkt links, Kreuz rechts">
+      <div class="expin mir">
+        <svg viewBox="0 0 28 28" aria-label="Kreuz"><path d="M14 2V26M2 14H26" stroke="#111" stroke-width="5" fill="none"/></svg>
+        <div style="width:180px"></div>
+        <svg viewBox="0 0 28 28" aria-label="Punkt"><circle cx="14" cy="14" r="13" fill="#111"/></svg>
+      </div>
+    </div>
+    <div class="think"><p>Was hast du beobachtet?</p></div>
+    <div class="mc" id="lobMc">
+      <button type="button" data-v="ok"><span class="mk" aria-hidden="true"></span><span>Mit dem linken Auge verschwand der Punkt, mit dem rechten nicht.</span></button>
+      <button type="button" data-v="beide"><span class="mk" aria-hidden="true"></span><span>Der Punkt verschwand mit beiden Augen.</span></button>
+      <button type="button" data-v="keins"><span class="mk" aria-hidden="true"></span><span>Der Punkt verschwand mit keinem der beiden Augen.</span></button>
+    </div>
+    <div class="fb" id="lobFb" role="status" aria-live="polite" hidden style="max-width:46em"></div>
+    <div class="ws" id="lWs" hidden>
+      <div class="ws-h"><svg><use href="#ic-pencil"/></svg>Jetzt auf dem Arbeitsblatt: Zusatz B</div>
+      <div class="ws-b"><p>Notiere deine Vorhersage mit Begründung und das Ergebnis deines Versuchs.</p><details class="q" style="margin-top:0"><summary>Vergleichslösung aufklappen</summary><div class="a"><p>Der Blinde Fleck liegt in jedem Auge auf der Seite zur Nase. Weil das Bild auf der Netzhaut seitenverkehrt ist, verschwindet beim linken Auge ein Punkt links vom Kreuz. Mit dem rechten Auge (Gegenprobe) bleibt dieser Punkt sichtbar.</p></div></details></div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button type="button" class="btn" data-go="3">Zurück</button>
+    <div class="r"><p class="lockmsg">Du bist am Ende angekommen. Prüfe, ob dein Arbeitsblatt vollständig ist.</p></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+'use strict';
+var LESSON=(function(){ var m=document.querySelector('meta[name="lesson"]'); return (m&&m.getAttribute('content')==='2')?2:1; })();
+var KEY='auge_jg9_v4_L'+LESSON, SVGNS='http://www.w3.org/2000/svg';
+var PARTS=LESSON===1?[0,1,2]:[0,3,4];
+function inLesson(n){ return PARTS.indexOf(n)>=0; }
+function $(id){return document.getElementById(id);}
+function show(el,on){ if(!el)return; if(el.namespaceURI===SVGNS){el.style.display=on?'':'none';} else {el.hidden=!on;} }
+function fb(el,type,html){
+  var ic={ok:'✓',err:'✗',info:'i'}[type];
+  el.className='fb '+type;
+  el.innerHTML='<span class="fbi" aria-hidden="true">'+ic+'</span><span>'+html+'</span>';
+  el.hidden=false;
+}
+var PENCIL='<svg aria-hidden="true"><use href="#ic-pencil"/></svg>';
+
+/* ================= Zustand (nur für diese Sitzung) ================= */
+var SORT_OK=['hornhaut','kammer','pupille','linse','glas','netz','sehnerv','gehirn'];
+var SORT_INIT=['glas','hornhaut','gehirn','pupille','netz','kammer','linse','sehnerv'];
+function fresh(){
+  return {v:3,cur:0,done:{},
+    b1:{viewed:{},last:null,mode:'3d'},
+    b2:{order:SORT_INIT.slice(),locked:{},fails:0,solved:false},
+    b3:{g1:false,g4:false,pred:null,wrong:[],d:4,mir:false,obs:null,simD:40,simS:4,found:{},step:0,
+        txt:'',sol:false,c1:false,c2:false},
+    b4:{lp:null,lwrong:[],lobs:null}};
+}
+var S=fresh();
+(function load(){
+  try{
+    var raw=window.sessionStorage.getItem(KEY); if(!raw)return;
+    var o=JSON.parse(raw); if(!o||o.v!==3)return;
+    var f=fresh();
+    ['done','b1','b2','b3','b4'].forEach(function(k){
+      if(o[k]&&typeof o[k]==='object'){ for(var p in o[k]){ if(Object.prototype.hasOwnProperty.call(o[k],p)) f[k][p]=o[k][p]; } }
+    });
+    if(typeof o.cur==='number'&&inLesson(o.cur)) f.cur=o.cur;
+    var ord=f.b2.order;
+    if(!Array.isArray(ord)||ord.length!==8||ord.slice().sort().join()!==SORT_OK.slice().sort().join()) f.b2.order=SORT_INIT.slice();
+    if(!f.b1.viewed||typeof f.b1.viewed!=='object') f.b1.viewed={};
+    if(f.b1.last&&typeof f.b1.last!=='string') f.b1.last=null;
+    if(!f.b2.locked||typeof f.b2.locked!=='object') f.b2.locked={};
+    if(!Array.isArray(f.b3.wrong)) f.b3.wrong=[];
+    if(!Array.isArray(f.b4.lwrong)) f.b4.lwrong=[];
+    f.b3.mir=false;
+    if(!f.b3.found||typeof f.b3.found!=='object') f.b3.found={};
+    if(typeof f.b3.d!=='number'||f.b3.d<3||f.b3.d>9) f.b3.d=4;
+    if(typeof f.b3.simD!=='number'||f.b3.simD<10||f.b3.simD>60) f.b3.simD=40;
+    if(f.b3.simS!==4&&f.b3.simS!==8) f.b3.simS=4;
+    S=f;
+  }catch(e){ S=fresh(); }
+})();
+var saveT=null;
+function save(){ try{ window.sessionStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function saveSoon(){ clearTimeout(saveT); saveT=setTimeout(save,400); }
+window.addEventListener('pagehide',save);
+
+/* ================= Navigation ================= */
+var NAVNM={0:'Start',1:'Aufbau',2:'Lichtweg',3:'Der Punkt',4:'Zusatz'};
+var LOCK='<svg aria-hidden="true"><use href="#ic-lock"/></svg>';
+function unlocked(n){
+  if(!inLesson(n)) return false;
+  if(n===2) return !!S.done[1];
+  if(n===4) return !!S.done[3];
+  return true;
+}
+function renderNav(){
+  var h='';
+  PARTS.forEach(function(n){
+    var cur=S.cur===n, lock=!unlocked(n), done=n>=1&&n<=3&&!!S.done[n];
+    var cls='step'+(cur?' cur':'')+(lock?' lock':'')+(done?' done':'')+(n===0?' home':'');
+    var st=lock?'gesperrt':(done?(cur?'aktuell · erledigt':'erledigt'):(cur?'aktuell':'offen'));
+    if(n===4) st='für Schnelle'+(lock?' · gesperrt':(cur?' · aktuell':''));
+    var num=n===0?'':'<span class="num">'+(lock?LOCK:(n===4?'+':(done&&!cur?'✓':n)))+'</span>';
+    h+='<li><button type="button" class="'+cls+'" data-go="'+n+'"'+(cur?' aria-current="step"':'')+(lock?' aria-disabled="true"':'')+'>'+num+
+       '<span class="tx"><span class="nm">'+NAVNM[n]+'</span>'+(n===0?'':'<span class="st">'+st+'</span>')+'</span></button></li>';
+  });
+  $('steps').innerHTML=h;
+}
+function updateLocks(){
+  $('next1').disabled=!S.done[1];
+  $('lock1').textContent=S.done[1]?'':'Baustein 2 wird freigeschaltet, sobald du alle 13 Strukturen gefunden hast.';
+  $('lock2').textContent=S.done[2]?'Stunde 1 ist geschafft. Prüfe, ob dein Arbeitsblatt vollständig ist.':'';
+  $('next3').disabled=!S.done[3];
+  $('lock3').textContent=S.done[3]?'':'Der Zusatz wird freigeschaltet, sobald du die Erklärung in Schritt 4 aufgedeckt hast.';
+  show($('b3end'),!!S.done[3]);
+}
+var toastT=null;
+function toast(msg){ var t=$('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(function(){t.hidden=true;},3800); }
+function go(n,keepScroll){
+  if(!inLesson(n)) n=0;
+  if(!unlocked(n)){
+    toast(n===2?'Finde zuerst alle 13 Strukturen in Baustein 1. Danach wird Baustein 2 freigeschaltet.':'Bearbeite zuerst den Pflichtteil in Baustein 3. Danach wird der Zusatz freigeschaltet.');
+    return;
+  }
+  S.cur=n; save(); animPause();
+  for(var i=0;i<=4;i++){ $('bs'+i).hidden=(i!==n); }
+  renderNav(); updateLocks();
+  if(!keepScroll) window.scrollTo(0,0);
+  if(n===1) b1layout();
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('[data-go]'):null;
+  if(b&&!b.disabled){ go(+b.getAttribute('data-go')); }
+});
+var resetArmed=false;
+$('resetBtn').addEventListener('click',function(){
+  if(!resetArmed){ resetArmed=true; this.textContent='Wirklich alles zurücksetzen? Noch einmal tippen'; setTimeout(function(){resetArmed=false; $('resetBtn').textContent='Von vorn beginnen';},4000); return; }
+  try{ window.sessionStorage.removeItem(KEY); }catch(e){}
+  S=fresh(); resetArmed=false; this.textContent='Von vorn beginnen';
+  initAll(); toast('Alles wurde zurückgesetzt.');
+});
+
+/* ================= Baustein 1 ================= */
+/* tx,ty: Lage im 2D-Schnittbild · p: Lage im 3D-Modell (x = Sehachse, vorn negativ; y = oben; z = zum Betrachter) */
+var ST=[
+ {id:'ziliar',nm:'Ziliarmuskel',tx:282,ty:188,p:[-90,93,3],
+  fn:'Der Ziliarmuskel liegt wie ein Ring um die Linse. Die Linse ist mit feinen Fasern an ihm aufgehängt. So bleibt sie genau hinter der Pupille.',
+  ws:'Der Ziliarmuskel umgibt die Linse ringförmig. An ihm ist die Linse mit feinen Fasern aufgehängt.'},
+ {id:'iris',nm:'Iris (Regenbogenhaut)',tx:256,ty:226,p:[-124,-54.2,9.6],
+  fn:'Die Iris ist ein farbiger Ring aus Muskeln. Sie gibt dem Auge seine Farbe. Die Iris kann die Pupille enger oder weiter stellen und regelt so, wie viel Licht ins Auge fällt.',
+  ws:'Die Iris (Regenbogenhaut) stellt die Pupille enger oder weiter. So regelt sie, wie viel Licht ins Auge fällt.'},
+ {id:'hornhaut',nm:'Hornhaut',tx:215.5,ty:231,p:[-159.6,49.7,3],
+  fn:'Die Hornhaut ist durchsichtig und nach außen gewölbt. Durch sie fällt das Licht ins Auge. Dabei wird das Licht gebrochen, das heißt: Es ändert seine Richtung.',
+  ws:'Die Hornhaut ist durchsichtig. Sie lässt das Licht ins Auge und bricht es.'},
+ {id:'kammer',nm:'Vordere Augenkammer',tx:226,ty:266,p:[-138,-12.6,43.3],
+  fn:'Die vordere Augenkammer ist der Raum zwischen Hornhaut und Iris. Sie ist mit einer klaren Flüssigkeit gefüllt, dem Kammerwasser. Das Kammerwasser versorgt Hornhaut und Linse mit Nährstoffen.',
+  ws:'Die vordere Augenkammer enthält Kammerwasser. Es versorgt Hornhaut und Linse mit Nährstoffen.'},
+ {id:'pupille',nm:'Pupille',tx:251,ty:290,p:[-127,0,0],
+  fn:'Die Pupille ist die Öffnung in der Mitte der Iris. Durch sie gelangt das Licht ins Innere des Auges. Sie sieht schwarz aus, weil aus dem Augeninneren kaum Licht zurückkommt.',
+  ws:'Die Pupille ist die Öffnung in der Iris. Durch sie gelangt das Licht ins Augeninnere.'},
+ {id:'linse',nm:'Linse',tx:278,ty:312,p:[-96,39,46],
+  fn:'Die Linse ist durchsichtig und auf beiden Seiten gewölbt. Sie bricht das Licht ein zweites Mal. So entsteht auf der Netzhaut ein Bild.',
+  ws:'Die Linse bricht das Licht so, dass auf der Netzhaut ein Bild entsteht.'},
+ {id:'leder',nm:'Lederhaut',tx:465.5,ty:168.5,p:[40,-128,74],
+  fn:'Die Lederhaut ist die feste, weiße Außenhülle des Auges. Sie schützt das Auge und hält es in Form. Vorn geht sie in die durchsichtige Hornhaut über.',
+  ws:'Die Lederhaut ist die feste, weiße Außenhülle. Sie schützt das Auge und gibt ihm seine Form.'},
+ {id:'ader',nm:'Aderhaut',tx:488.6,ty:207.1,p:[105.3,88.4,3],
+  fn:'Die Aderhaut liegt zwischen Lederhaut und Netzhaut. Sie enthält viele Blutgefäße. Über das Blut versorgt sie die Netzhaut mit Sauerstoff und Nährstoffen.',
+  ws:'Die Aderhaut enthält viele Blutgefäße. Sie versorgt die Netzhaut mit Sauerstoff und Nährstoffen.'},
+ {id:'netz',nm:'Netzhaut',tx:497.4,ty:244,p:[32,-41,-112],
+  fn:'Die Netzhaut kleidet das Augeninnere aus. In ihr liegen die Sehzellen (Lichtsinneszellen). Sie nehmen das Licht als Reiz auf und wandeln es in elektrische Signale um.',
+  ws:'Die Netzhaut enthält die Sehzellen. Sie wandeln Licht in elektrische Signale um.'},
+ {id:'gelb',nm:'Gelber Fleck',tx:502,ty:280,p:[122.5,0,0],
+  fn:'Der Gelbe Fleck liegt in der Mitte der Netzhaut, genau gegenüber der Pupille. Hier stehen die Sehzellen besonders dicht. Deshalb ist er die Stelle des schärfsten Sehens.',
+  ws:'Der Gelbe Fleck ist die Stelle des schärfsten Sehens. Hier stehen die Sehzellen besonders dicht.'},
+ {id:'sehnerv',nm:'Sehnerv',tx:542,ty:335,p:[227.3,-73.9,0],
+  fn:'Im Sehnerv sind die Nervenfasern aus der Netzhaut gebündelt. Er leitet die elektrischen Signale zum Gehirn. Erst im Gehirn entsteht der Seheindruck.',
+  ws:'Der Sehnerv leitet die elektrischen Signale von der Netzhaut zum Gehirn.'},
+ {id:'blind',nm:'Austrittsstelle des Sehnervs',tx:491,ty:319,p:[116,-37.7,0],
+  fn:'An dieser Stelle verlässt der Sehnerv das Auge. Von hier aus führt er zum Gehirn.',
+  ws:'An der Austrittsstelle verlässt der Sehnerv das Auge.'},
+ {id:'glas',nm:'Glaskörper',tx:422,ty:380,p:[25,58,3],
+  fn:'Der Glaskörper ist eine durchsichtige, gallertartige Masse. Er füllt das Innere des Auges aus und gibt ihm seine runde Form. Das Licht durchquert ihn auf dem Weg zur Netzhaut.',
+  ws:'Der Glaskörper füllt das Augeninnere aus und gibt dem Auge seine runde Form.'}
+];
+var WS_ORDER=['hornhaut','kammer','iris','pupille','linse','ziliar','glas','leder','ader','netz','gelb','blind','sehnerv'];
+/* Stichworte für Aufgabe 2 des Arbeitsblatts (acht Strukturen) */
+var WK_ORDER=['hornhaut','iris','pupille','linse','glas','netz','ader','sehnerv'];
+var WK={
+  hornhaut:'durchsichtig · lässt Licht ins Auge · bricht das Licht',
+  iris:'stellt die Pupille enger oder weiter · regelt, wie viel Licht ins Auge fällt',
+  pupille:'Öffnung in der Iris · Licht gelangt ins Augeninnere',
+  linse:'bricht das Licht · auf der Netzhaut entsteht ein Bild',
+  glas:'füllt das Augeninnere aus · gibt dem Auge seine Form',
+  netz:'enthält die Sehzellen · wandeln Licht in elektrische Signale um',
+  ader:'viele Blutgefäße · versorgt die Netzhaut mit Sauerstoff und Nährstoffen',
+  sehnerv:'leitet die elektrischen Signale zum Gehirn'
+};
+var BY={}; ST.forEach(function(s){BY[s.id]=s;});
+var HS={};
+function hsShape(id){ return document.querySelector('#b1hs [data-id="'+id+'"]'); }
+function viewedN(){ return ST.filter(function(s){return !!S.b1.viewed[s.id];}).length; }
+
+/* ---------- 3D-Modell (WebGL, ohne Bibliothek) ---------- */
+var M3=(function(){
+  var cv=$('eye3d'),box=$('m3'),gl=null,ok=false,prog=null,U={},tbuf=null,lbuf=null,meshes=[],lineN=0,col=null;
+  var D2R=Math.PI/180,PA=110,PB=360;
+  var yaw=28,pitch=18,DIST=700,FOV=34,C=[20,-10,0],W=0,H=0,pend=false,animId=0,sel=null,onPlace=null;
+  var VIEWS={cut:[28,18],front:[80,6],back:[-142,12]};
+
+  function arc(R,a0,a1,n,cx){ var p=[],i,a; for(i=0;i<=n;i++){ a=(a0+(a1-a0)*i/n)*D2R; p.push([(cx||0)+R*Math.cos(a),R*Math.sin(a)]); } return p; }
+  function build(fine){
+    var dphi=fine?5:15,out=[],lines=[];
+    function N(n){ return fine?n:Math.max(3,Math.round(n/3)); }
+    function mesh(id,c,a,spec,solid,tl){ var m={id:id,col:c,a:a,spec:spec,solid:solid,tl:!!tl,v:[]}; out.push(m); return m; }
+    function P(x,r,f){ return [x,r*Math.cos(f),r*Math.sin(f)]; }
+    function tri(m,a,b,c,na,nb,nc){ m.v.push(a[0],a[1],a[2],na[0],na[1],na[2],b[0],b[1],b[2],nb[0],nb[1],nb[2],c[0],c[1],c[2],nc[0],nc[1],nc[2]); }
+    function rev(m,pr,a0,a1){
+      var n=Math.max(1,Math.round((a1-a0)/dphi)),i,j,nr=[];
+      for(i=0;i<pr.length;i++){
+        var p0=pr[Math.max(0,i-1)],p1=pr[Math.min(pr.length-1,i+1)],tx=p1[0]-p0[0],tr=p1[1]-p0[1],l=Math.sqrt(tx*tx+tr*tr)||1;
+        nr.push([tr/l,-tx/l]);
+      }
+      for(j=0;j<n;j++){
+        var f0=(a0+(a1-a0)*j/n)*D2R,f1=(a0+(a1-a0)*(j+1)/n)*D2R;
+        for(i=0;i<pr.length-1;i++){
+          var A=P(pr[i][0],pr[i][1],f0),B=P(pr[i+1][0],pr[i+1][1],f0),Cc=P(pr[i+1][0],pr[i+1][1],f1),Dd=P(pr[i][0],pr[i][1],f1);
+          var nA=P(nr[i][0],nr[i][1],f0),nB=P(nr[i+1][0],nr[i+1][1],f0),nC=P(nr[i+1][0],nr[i+1][1],f1),nD=P(nr[i][0],nr[i][1],f1);
+          tri(m,A,B,Cc,nA,nB,nC); tri(m,A,Cc,Dd,nA,nC,nD);
+        }
+      }
+    }
+    function outline(pts,ph,sg){
+      if(!fine)return;
+      var f=ph*D2R,ox=0,oy=-Math.sin(f)*0.5*sg,oz=Math.cos(f)*0.5*sg,i;
+      for(i=0;i<pts.length;i++){
+        var a=P(pts[i][0],pts[i][1],f),b=P(pts[(i+1)%pts.length][0],pts[(i+1)%pts.length][1],f);
+        lines.push(a[0]+ox,a[1]+oy,a[2]+oz,0,0,1,b[0]+ox,b[1]+oy,b[2]+oz,0,0,1);
+      }
+    }
+    function capStrip(m,o,inn,ph,sg){
+      var f=ph*D2R,nn=[0,-Math.sin(f),Math.cos(f)],i;
+      for(i=0;i<o.length-1;i++){
+        var A=P(o[i][0],o[i][1],f),B=P(o[i+1][0],o[i+1][1],f),Cc=P(inn[i+1][0],inn[i+1][1],f),Dd=P(inn[i][0],inn[i][1],f);
+        tri(m,A,B,Cc,nn,nn,nn); tri(m,A,Cc,Dd,nn,nn,nn);
+      }
+      outline(o.concat(inn.slice().reverse()),ph,sg);
+    }
+    function capFan(m,poly,c,ph){
+      var f=ph*D2R,nn=[0,-Math.sin(f),Math.cos(f)],cc=P(c[0],c[1],f),i;
+      for(i=0;i<poly.length;i++){ tri(m,cc,P(poly[i][0],poly[i][1],f),P(poly[(i+1)%poly.length][0],poly[(i+1)%poly.length][1],f),nn,nn,nn); }
+    }
+    function band(m,o,inn,capM){
+      var n=o.length-1;
+      rev(m,o,PA,PB); rev(m,inn,PA,PB);
+      if(o[0][1]>0.01||inn[0][1]>0.01) rev(m,[o[0],inn[0]],PA,PB);
+      rev(m,[o[n],inn[n]],PA,PB);
+      capStrip(capM||m,o,inn,PA,-1); capStrip(capM||m,o,inn,PB,1);
+    }
+    var i,t;
+    /* Augenwand: Lederhaut, Aderhaut, Netzhaut */
+    band(mesh('leder',[0.97,0.96,0.93],1,0.25,true),arc(150,0,142,N(42)),arc(141,0,142,N(42)));
+    band(mesh('ader',[0.73,0.38,0.30],1,0.1,true),arc(141,0,122,N(36)),arc(134,0,122,N(36)));
+    band(mesh('netz',[0.96,0.82,0.58],1,0.1,true),arc(134,0,118,N(36)),arc(127,0,118,N(36)));
+    /* Gelber Fleck */
+    band(mesh('gelb',[0.95,0.72,0.0],1,0.1,false),arc(134.4,0,8,5),arc(125.6,0,8,5));
+    /* Ziliarmuskel */
+    var zi=[],zo=arc(140.6,142,122,N(9));
+    for(i=0;i<zo.length;i++){ t=i/(zo.length-1); zi.push([(1-t)*(1-t)*-98+2*t*(1-t)*-84+t*t*-71,(1-t)*(1-t)*70+2*t*(1-t)*84+t*t*113.6]); }
+    band(mesh('ziliar',[0.84,0.56,0.49],1,0.15,true),zo,zi);
+    /* Iris */
+    var io=[],ii=[];
+    for(i=0;i<=4;i++){ t=i/4; io.push([-113-15*t,85-59*t]); ii.push([-104-17*t,80-56*t]); }
+    band(mesh('iris',[0.33,0.50,0.62],1,0.2,true),io,ii);
+    /* Linse (ganz, ungeschnitten) */
+    var lp=[]; for(i=0;i<=N(30);i++){ t=Math.PI*i/N(30); lp.push([-96-24*Math.cos(t),58*Math.sin(t)]); }
+    rev(mesh('linse',[0.80,0.89,0.93],1,0.7,true),lp,0,360);
+    /* Sehnerv und Blinder Fleck */
+    var c18=Math.cos(18*D2R),s18=Math.sin(18*D2R),d=[c18,-s18,0],u=[s18,c18,0],nv=mesh('sehnerv',[0.93,0.85,0.54],1,0.15,true),bl=mesh('blind',[1.0,0.97,0.86],1,0.1,false);
+    var ns=fine?28:10,rn=12.5,s0=125.6,s1=235;
+    function Q(s,ang,rr){ var cu=Math.cos(ang)*rr,cw=Math.sin(ang)*rr; return [d[0]*s+u[0]*cu,d[1]*s+u[1]*cu,cw]; }
+    function Qn(ang){ return [u[0]*Math.cos(ang),u[1]*Math.cos(ang),Math.sin(ang)]; }
+    for(i=0;i<ns;i++){
+      var a0=2*Math.PI*i/ns,a1=2*Math.PI*(i+1)/ns;
+      tri(nv,Q(s0,a0,rn),Q(s1,a0,rn),Q(s1,a1,rn),Qn(a0),Qn(a0),Qn(a1)); tri(nv,Q(s0,a0,rn),Q(s1,a1,rn),Q(s0,a1,rn),Qn(a0),Qn(a1),Qn(a1));
+      tri(nv,Q(s1,0,0),Q(s1,a0,rn),Q(s1,a1,rn),d,d,d);
+      tri(bl,Q(s0,0,0),Q(s0,a0,rn),Q(s0,a1,rn),d,d,d);
+      if(fine){ var e0=Q(s0-0.4,a0,rn),e1=Q(s0-0.4,a1,rn); lines.push(e0[0],e0[1],e0[2],0,0,1,e1[0],e1[1],e1[2],0,0,1); e0=Q(s1+0.4,a0,rn); e1=Q(s1+0.4,a1,rn); lines.push(e0[0],e0[1],e0[2],0,0,1,e1[0],e1[1],e1[2],0,0,1); }
+    }
+    /* Glaskörper und vordere Augenkammer: durchscheinende Schnittflächen */
+    var vp=[];
+    for(i=0;i<=10;i++){ t=Math.PI/2+Math.PI/2*i/10; vp.push([-96-24*Math.cos(t),58*Math.sin(t)]); }
+    vp=vp.concat(arc(127,0,118,24));
+    vp.push([-71,113.6]);
+    for(i=zi.length-1;i>=0;i--) vp.push(zi[i]);
+    var gl_=mesh('glas',[0.84,0.92,0.95],0.24,0,false,true);
+    capFan(gl_,vp,[15,50],PA); capFan(gl_,vp,[15,50],PB);
+    var kp=[],ci=[]; for(i=0;i<=12;i++){ t=64.64*i/12*D2R; ci.push([-69.94-96.06*Math.cos(t),96.06*Math.sin(t)]); }
+    kp=ci.concat([[-113,85],[-128,26],[-121,24],[-117.8,24]]);
+    for(i=1;i<=4;i++){ t=24.4*(1-i/4)*D2R; kp.push([-96-24*Math.cos(t),58*Math.sin(t)]); }
+    var km=mesh('kammer',[0.90,0.96,0.98],0.30,0,false,true);
+    capFan(km,kp,[-141,28],PA); capFan(km,kp,[-141,28],PB);
+    /* Pupille: nur sichtbar, wenn sie ausgewählt ist */
+    rev(mesh('pupille',[0.05,0.62,0.52],0,0,false,true),[[-124.5,0],[-124.5,24]],PA,PB);
+    /* Hornhaut: durchsichtig, Schnittflächen deckend */
+    var co=[]; for(i=0;i<=12;i++){ t=64.1*i/12*D2R; co.push([-73.4-102.6*Math.cos(t),102.6*Math.sin(t)]); }
+    var hc=mesh('hornhaut',[0.78,0.89,0.93],1,0.2,false);
+    capStrip(hc,co,ci,PA,-1); capStrip(hc,co,ci,PB,1);
+    var hm=mesh('hornhaut',[0.80,0.91,0.95],0.36,0.9,false,true);
+    rev(hm,co,PA,PB); rev(hm,ci,PA,PB);
+    return {meshes:out,lines:lines};
+  }
+
+  var VS='attribute vec3 aP;attribute vec3 aN;uniform mat4 uMV;uniform mat4 uPr;uniform mat3 uNM;varying vec3 vN;varying vec3 vV;void main(){vN=uNM*aN;vec4 p=uMV*vec4(aP,1.0);vV=-p.xyz;gl_Position=uPr*p;}';
+  var FS='precision mediump float;uniform vec3 uCol;uniform float uA;uniform float uHi;uniform float uSpec;uniform float uFlat;varying vec3 vN;varying vec3 vV;void main(){if(uFlat>0.5){gl_FragColor=vec4(uCol,uA);return;}vec3 n=normalize(vN);vec3 v=normalize(vV);if(dot(n,v)<0.0)n=-n;vec3 l=normalize(vec3(0.35,0.6,0.72));float d=max(dot(n,l),0.0);float d2=max(dot(n,v),0.0);float h=pow(max(dot(n,normalize(l+v)),0.0),42.0)*uSpec;vec3 c=uCol*(0.46+0.34*d+0.26*d2)+vec3(h*0.6);c=mix(c,vec3(0.05,0.62,0.52),uHi);gl_FragColor=vec4(c,uA);}';
+  function sh(type,src){ var s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); return gl.getShaderParameter(s,gl.COMPILE_STATUS)?s:null; }
+  function setup(){
+    var v=sh(gl.VERTEX_SHADER,VS),f=sh(gl.FRAGMENT_SHADER,FS); if(!v||!f)return false;
+    prog=gl.createProgram(); gl.attachShader(prog,v); gl.attachShader(prog,f);
+    gl.bindAttribLocation(prog,0,'aP'); gl.bindAttribLocation(prog,1,'aN'); gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog,gl.LINK_STATUS))return false;
+    ['uMV','uPr','uNM','uCol','uA','uHi','uSpec','uFlat'].forEach(function(n){U[n]=gl.getUniformLocation(prog,n);});
+    var g=build(true),tot=0,off=0;
+    g.meshes.forEach(function(m){ tot+=m.v.length; });
+    var all=new Float32Array(tot);
+    meshes=g.meshes.map(function(m){ var o={id:m.id,col:m.col,a:m.a,spec:m.spec,tl:m.tl,start:off,count:m.v.length/6}; all.set(m.v,off*6); off+=o.count; return o; });
+    tbuf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,tbuf); gl.bufferData(gl.ARRAY_BUFFER,all,gl.STATIC_DRAW);
+    lbuf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,lbuf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.lines),gl.STATIC_DRAW);
+    lineN=g.lines.length/6;
+    return true;
+  }
+  function buildCol(){
+    var g=build(false),a=[];
+    g.meshes.forEach(function(m){ if(!m.solid)return; for(var i=0;i<m.v.length;i+=6){ a.push(m.v[i],m.v[i+1],m.v[i+2]); } });
+    col=new Float32Array(a);
+  }
+  function mats(y,p){
+    var cy=Math.cos(y*D2R),sy=Math.sin(y*D2R),cx=Math.cos(p*D2R),sx=Math.sin(p*D2R);
+    var R=[cy,0,sy, sx*sy,cx,-sx*cy, -cx*sy,sx,cx*cy];
+    var T=[-(R[0]*C[0]+R[1]*C[1]+R[2]*C[2]),-(R[3]*C[0]+R[4]*C[1]+R[5]*C[2]),-(R[6]*C[0]+R[7]*C[1]+R[8]*C[2])-DIST];
+    return {R:R,T:T,cam:[C[0]+DIST*R[6],C[1]+DIST*R[7],C[2]+DIST*R[8]]};
+  }
+  function proj(m,p){
+    var R=m.R,x=R[0]*p[0]+R[1]*p[1]+R[2]*p[2]+m.T[0],y=R[3]*p[0]+R[4]*p[1]+R[5]*p[2]+m.T[1],z=R[6]*p[0]+R[7]*p[1]+R[8]*p[2]+m.T[2];
+    var f=1/Math.tan(FOV*D2R/2),asp=W/H;
+    return {x:(f/asp*x/-z*0.5+0.5)*W,y:(0.5-f*y/-z*0.5)*H,z:-z};
+  }
+  function hit(ox,oy,oz,dx,dy,dz,tmax){
+    var c=col,n=c.length,i;
+    for(i=0;i<n;i+=9){
+      var ax=c[i],ay=c[i+1],az=c[i+2],e1x=c[i+3]-ax,e1y=c[i+4]-ay,e1z=c[i+5]-az,e2x=c[i+6]-ax,e2y=c[i+7]-ay,e2z=c[i+8]-az;
+      var px=dy*e2z-dz*e2y,py=dz*e2x-dx*e2z,pz=dx*e2y-dy*e2x,det=e1x*px+e1y*py+e1z*pz;
+      if(det>-1e-7&&det<1e-7)continue;
+      var inv=1/det,tx=ox-ax,ty=oy-ay,tz=oz-az,uu=(tx*px+ty*py+tz*pz)*inv;
+      if(uu<0||uu>1)continue;
+      var qx=ty*e1z-tz*e1y,qy=tz*e1x-tx*e1z,qz=tx*e1y-ty*e1x,vv=(dx*qx+dy*qy+dz*qz)*inv;
+      if(vv<0||uu+vv>1)continue;
+      var t=(e2x*qx+e2y*qy+e2z*qz)*inv;
+      if(t>0.01&&t<tmax)return true;
+    }
+    return false;
+  }
+  function visAt(m,p){
+    var dx=m.cam[0]-p[0],dy=m.cam[1]-p[1],dz=m.cam[2]-p[2],L=Math.sqrt(dx*dx+dy*dy+dz*dz); dx/=L; dy/=L; dz/=L;
+    return !hit(p[0]+dx*3,p[1]+dy*3,p[2]+dz*3,dx,dy,dz,L-3);
+  }
+  function place(){
+    if(!onPlace||W<10||b1mode!=='3d')return;
+    var m=mats(yaw,pitch);
+    ST.forEach(function(s){
+      var q=proj(m,s.p),v=q.x>14&&q.x<W-14&&q.y>14&&q.y<H-14&&visAt(m,s.p);
+      onPlace(s.id,q.x,q.y,v,q.z);
+    });
+  }
+  function draw(){
+    if(!ok||W<10)return;
+    var m=mats(yaw,pitch),R=m.R,T=m.T,f=1/Math.tan(FOV*D2R/2),asp=W/H,nr=200,fr=1600;
+    gl.viewport(0,0,cv.width,cv.height); gl.clearColor(1,1,1,1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(prog);
+    gl.uniformMatrix4fv(U.uMV,false,new Float32Array([R[0],R[3],R[6],0,R[1],R[4],R[7],0,R[2],R[5],R[8],0,T[0],T[1],T[2],1]));
+    gl.uniformMatrix4fv(U.uPr,false,new Float32Array([f/asp,0,0,0,0,f,0,0,0,0,(fr+nr)/(nr-fr),-1,0,0,2*fr*nr/(nr-fr),0]));
+    gl.uniformMatrix3fv(U.uNM,false,new Float32Array([R[0],R[3],R[6],R[1],R[4],R[7],R[2],R[5],R[8]]));
+    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND); gl.depthMask(true);
+    gl.bindBuffer(gl.ARRAY_BUFFER,tbuf); gl.enableVertexAttribArray(0); gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(0,3,gl.FLOAT,false,24,0); gl.vertexAttribPointer(1,3,gl.FLOAT,false,24,12);
+    gl.uniform1f(U.uFlat,0);
+    gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1,1);
+    function dm(o){
+      var hi=(sel&&o.id===sel)?1:0,a=o.a;
+      if(o.tl&&hi) a=Math.max(a,0.72);
+      if(a<=0)return;
+      gl.uniform3f(U.uCol,o.col[0],o.col[1],o.col[2]); gl.uniform1f(U.uA,a); gl.uniform1f(U.uSpec,o.spec); gl.uniform1f(U.uHi,hi?0.62:0);
+      gl.drawArrays(gl.TRIANGLES,o.start,o.count);
+    }
+    meshes.forEach(function(o){ if(!o.tl) dm(o); });
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    gl.bindBuffer(gl.ARRAY_BUFFER,lbuf); gl.vertexAttribPointer(0,3,gl.FLOAT,false,24,0); gl.vertexAttribPointer(1,3,gl.FLOAT,false,24,12);
+    gl.uniform1f(U.uFlat,1); gl.uniform3f(U.uCol,0.2,0.25,0.24); gl.uniform1f(U.uA,1);
+    gl.drawArrays(gl.LINES,0,lineN);
+    gl.uniform1f(U.uFlat,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,tbuf); gl.vertexAttribPointer(0,3,gl.FLOAT,false,24,0); gl.vertexAttribPointer(1,3,gl.FLOAT,false,24,12);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+    meshes.forEach(function(o){ if(o.tl) dm(o); });
+    gl.depthMask(true); gl.disable(gl.BLEND);
+    place();
+  }
+  function request(){ if(pend)return; pend=true; requestAnimationFrame(function(){ pend=false; draw(); }); }
+  function resize(){
+    var r=box.getBoundingClientRect(); if(r.width<10)return;
+    if(r.height<50){ box.style.height=Math.round(r.width*0.75)+'px'; r=box.getBoundingClientRect(); }
+    W=r.width; H=r.height;
+    var dpr=Math.min(2,window.devicePixelRatio||1),cw=Math.round(W*dpr),ch=Math.round(H*dpr);
+    if(cv.width!==cw||cv.height!==ch){ cv.width=cw; cv.height=ch; }
+    if(ok) request(); else place();
+  }
+  function stopAnim(){ if(animId){ cancelAnimationFrame(animId); animId=0; } }
+  function animTo(y,p,cb){
+    stopAnim();
+    var y0=yaw,p0=pitch,dy=((y-y0)%360+540)%360-180,t0=performance.now(),dur=550;
+    function step(now){
+      var k=Math.min(1,(now-t0)/dur),e=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      yaw=y0+dy*e; pitch=p0+(p-p0)*e; draw();
+      if(k<1) animId=requestAnimationFrame(step); else { animId=0; if(cb)cb(); }
+    }
+    animId=requestAnimationFrame(step);
+  }
+  function findView(id,strict){
+    var p=BY[id].p,best=null,bd=1e9,y,pi;
+    for(pi=-40;pi<=60;pi+=20){ for(y=-180;y<180;y+=15){
+      var m=mats(y,pi),q=proj(m,p);
+      if(q.x<W*0.15||q.x>W*0.85||q.y<H*0.15||q.y>H*0.85)continue;
+      if(!visAt(m,p))continue;
+      var clash=false,k,o,q2;
+      for(k=0;strict&&k<ST.length&&!clash;k++){
+        o=ST[k]; if(o.id===id)continue;
+        q2=proj(m,o.p);
+        if(Math.abs(q2.x-q.x)<34&&Math.abs(q2.y-q.y)<34&&visAt(m,o.p)) clash=true;
+      }
+      if(clash)continue;
+      var dy=Math.abs(((y-yaw)%360+540)%360-180),dd=dy+Math.abs(pi-pitch)*1.5+Math.abs(pi-15)*0.6;
+      if(dd<bd){bd=dd;best=[y,pi];}
+    } }
+    return best;
+  }
+  function init(cb){
+    onPlace=cb;
+    try{ gl=cv.getContext('webgl',{antialias:true,alpha:false})||cv.getContext('experimental-webgl',{antialias:true,alpha:false}); }catch(e){ gl=null; }
+    try{ ok=!!gl&&setup(); }catch(e2){ ok=false; }
+    if(!ok)return false;
+    buildCol();
+    cv.addEventListener('webglcontextlost',function(e){ e.preventDefault(); ok=false; });
+    cv.addEventListener('webglcontextrestored',function(){ try{ ok=setup(); }catch(e){ ok=false; } request(); });
+    var pid=null,lx=0,ly=0;
+    cv.addEventListener('pointerdown',function(e){
+      if(pid!==null)return; pid=e.pointerId; lx=e.clientX; ly=e.clientY;
+      try{cv.setPointerCapture(pid);}catch(_){} stopAnim(); e.preventDefault();
+    });
+    cv.addEventListener('pointermove',function(e){
+      if(e.pointerId!==pid)return;
+      var dx=e.clientX-lx,dy=e.clientY-ly; lx=e.clientX; ly=e.clientY;
+      if(dx===0&&dy===0)return;
+      yaw+=dx*0.45; pitch=Math.max(-80,Math.min(80,pitch+dy*0.45));
+      $('m3hint').hidden=true; request();
+    });
+    function up(e){ if(e.pointerId===pid) pid=null; }
+    cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+    return true;
+  }
+  return {
+    init:init, resize:resize, redraw:request,
+    isOk:function(){return ok;},
+    select:function(id){ sel=id; request(); },
+    view:function(n){ if(VIEWS[n]) animTo(VIEWS[n][0],VIEWS[n][1]); },
+    reset:function(){ stopAnim(); yaw=VIEWS.cut[0]; pitch=VIEWS.cut[1]; request(); },
+    showSpot:function(id,cb){ var v=findView(id,true)||findView(id,false); if(!v)return false; animTo(v[0],v[1],cb); return true; }
+  };
+})();
+
+/* ---------- Symbole, Infokasten, Fortschritt ---------- */
+var b1mode='3d';
+function buildHotspots(){
+  var L=$('hsLayer'); L.innerHTML=''; HS={};
+  ST.forEach(function(s){
+    var b=document.createElement('button');
+    b.type='button'; b.className='hsb off'; b.setAttribute('data-id',s.id);
+    b.innerHTML='<i aria-hidden="true">+</i>';
+    L.appendChild(b); HS[s.id]={el:b,x:0,y:0,v:false};
+  });
+}
+function styleHotspots(){
+  ST.forEach(function(s){
+    var h=HS[s.id],seen=!!S.b1.viewed[s.id],on=S.b1.last===s.id;
+    h.el.classList.toggle('seen',seen&&!on); h.el.classList.toggle('on',on);
+    h.el.firstChild.textContent=seen?'✓':'+';
+    h.el.setAttribute('aria-label',seen?s.nm:'Unbekannte Struktur – antippen');
+  });
+}
+function nameTag(){
+  var t=$('hsName'),id=S.b1.last,h=id?HS[id]:null;
+  if(!h||!h.v){ t.hidden=true; return; }
+  t.textContent=BY[id].nm; t.hidden=false;
+  var bw=$('m3').clientWidth,tw=t.offsetWidth,x=h.x+24,y=h.y-15;
+  if(x+tw>bw-6) x=h.x-24-tw;
+  t.style.transform='translate('+Math.round(Math.max(6,x))+'px,'+Math.round(Math.max(6,y))+'px)';
+}
+function setHs(id,x,y,v,z){
+  var h=HS[id]; if(!h)return;
+  h.x=x; h.y=y; h.v=v;
+  h.el.style.transform='translate('+x.toFixed(1)+'px,'+y.toFixed(1)+'px)';
+  h.el.style.zIndex=String(2000-Math.round(z||0));
+  h.el.classList.toggle('off',!v);
+  if(id===ST[ST.length-1].id) nameTag();
+}
+function place2d(){
+  var b=$('m3'),w=b.clientWidth,h=b.clientHeight;
+  ST.forEach(function(s){ setHs(s.id,(s.tx-135)/480*w,(s.ty-100)/360*h,true,0); });
+}
+function setMode(m){
+  if(m==='3d'&&!M3.isOk()) m='2d';
+  b1mode=m; S.b1.mode=m;
+  $('eye3d').hidden=(m!=='3d');
+  if(m==='2d') $('eyeFig').removeAttribute('hidden'); else $('eyeFig').setAttribute('hidden','');
+  $('m3hint').hidden=(m!=='3d');
+  var vb=document.querySelectorAll('#m3tools [data-view]'),i;
+  for(i=0;i<vb.length;i++) vb[i].hidden=(m!=='3d');
+  $('modeBtn').textContent=(m==='3d')?'Schnittbild (2D)':'3D-Modell';
+  $('modeBtn').hidden=!M3.isOk();
+  b1layout();
+}
+function b1layout(){
+  if($('bs1').hidden)return;
+  if(b1mode==='3d') M3.resize(); else place2d();
+}
+function renderProg(){
+  var n=viewedN();
+  $('b1progLbl').textContent=n+' von 13 Strukturen gefunden';
+  $('b1bar').style.width=(n/13*100)+'%';
+  show($('b1done'),n===13); show($('b1nextWrap'),n<13);
+  if(n===13&&!S.done[1]){
+    S.done[1]=true; save(); renderNav(); updateLocks();
+    fb($('b1fb'),'ok','Du hast alle 13 Strukturen gefunden. Prüfe die Aufgaben 1 und 2 auf deinem Arbeitsblatt – dann geht es weiter mit Baustein 2.');
+  }
+}
+function renderWs1(){
+  var h='';
+  WK_ORDER.forEach(function(id){
+    var s=BY[id];
+    h+=S.b1.viewed[id]?('<li><strong>'+s.nm+':</strong> '+WK[id]+'</li>'):('<li class="open">noch nicht gefunden</li>');
+  });
+  $('b1wsList').innerHTML=h;
+}
+function renderInfo(){
+  var s=S.b1.last?BY[S.b1.last]:null,i;
+  var on=document.querySelectorAll('#b1hs .on'); for(i=0;i<on.length;i++) on[i].classList.remove('on');
+  if(!s){ $('b1infoBody').innerHTML='<p class="muted" style="margin:0">Tippe auf ein Symbol im Modell.</p>'; M3.select(null); return; }
+  var hs=hsShape(s.id); if(hs) hs.classList.add('on');
+  $('b1infoBody').innerHTML='<h3>'+s.nm+'</h3><p>'+s.fn+'</p><p class="wsline">'+PENCIL+'<span><strong>Arbeitsblatt:</strong> Trage den Namen in die Zeichnung ein (Aufgabe 1).'+(WK[s.id]?' Notiere die Aufgabe dieser Struktur in Stichworten (Aufgabe 2).':'')+'</span></p>';
+  M3.select(s.id);
+}
+function showInfo(id){
+  if(!BY[id])return;
+  S.b1.viewed[id]=true; S.b1.last=id; save();
+  $('b1fb').hidden=true;
+  var pu=document.querySelectorAll('.hsb.pulse'),i; for(i=0;i<pu.length;i++) pu[i].classList.remove('pulse');
+  styleHotspots(); renderInfo(); renderProg(); renderWs1(); nameTag();
+}
+function renderB1(){
+  styleHotspots(); renderInfo(); renderProg(); renderWs1();
+  setMode(S.b1.mode==='2d'?'2d':'3d');
+}
+function pulse(id){
+  var el=HS[id].el; el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');
+  setTimeout(function(){el.classList.remove('pulse');},2600);
+}
+$('hsLayer').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('.hsb'):null; if(b) showInfo(b.getAttribute('data-id'));
+});
+$('eyeFig').addEventListener('click',function(e){
+  var t=e.target.closest?e.target.closest('.hs'):null; if(t) showInfo(t.getAttribute('data-id'));
+});
+$('m3tools').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('[data-view]'):null; if(b){ $('m3hint').hidden=true; M3.view(b.getAttribute('data-view')); }
+});
+$('modeBtn').addEventListener('click',function(){ setMode(b1mode==='3d'?'2d':'3d'); save(); });
+$('b1next').addEventListener('click',function(){
+  var id=null,i; for(i=0;i<WS_ORDER.length;i++){ if(!S.b1.viewed[WS_ORDER[i]]){ id=WS_ORDER[i]; break; } }
+  if(!id)return;
+  fb($('b1fb'),'info','Das blinkende Symbol hast du noch nicht angetippt.');
+  if(b1mode==='3d'){
+    $('m3hint').hidden=true;
+    if(!M3.showSpot(id,function(){pulse(id);})){ setMode('2d'); pulse(id); }
+  } else pulse(id);
+});
+if(LESSON===1) M3.init(setHs);
+window.addEventListener('resize',b1layout);
+window.addEventListener('orientationchange',function(){ setTimeout(b1layout,250); });
+
+/* ================= Baustein 2: Reihenfolge ================= */
+var ROW=60;
+var SNAME={hornhaut:'Hornhaut',kammer:'Vordere Augenkammer',pupille:'Pupille',linse:'Linse',glas:'Glaskörper',netz:'Netzhaut',sehnerv:'Sehnerv',gehirn:'Gehirn'};
+var SHINT={
+ hornhaut:'Die Hornhaut ist die äußerste durchsichtige Schicht. Hier tritt das Licht ins Auge ein.',
+ kammer:'Die vordere Augenkammer liegt direkt hinter der Hornhaut, noch vor der Iris.',
+ pupille:'Die Pupille ist die Öffnung in der Iris. Erst wenn das Licht hindurch ist, erreicht es die Linse.',
+ linse:'Die Linse liegt direkt hinter der Pupille und vor dem Glaskörper.',
+ glas:'Der Glaskörper füllt den Raum zwischen Linse und Netzhaut.',
+ netz:'Auf der Netzhaut endet der Weg des Lichts. Hier wird es in elektrische Signale umgewandelt.',
+ sehnerv:'Der Sehnerv leitet die Signale von der Netzhaut weg in Richtung Gehirn.',
+ gehirn:'Das Gehirn ist die letzte Station. Erst dort entsteht der Seheindruck.'
+};
+function slotOf(id){ return S.b2.order.indexOf(id); }
+function layoutSort(skip){
+  var it=$('sortList').children;
+  for(var i=0;i<it.length;i++){
+    var el=it[i],id=el.getAttribute('data-id');
+    el.classList.toggle('ok',!!S.b2.locked[id]);
+    if(el===skip)continue;
+    el.style.transform='translateY('+(slotOf(id)*ROW)+'px)';
+  }
+}
+function moveTo(id,target){
+  var U=[],i; for(i=0;i<8;i++){ if(!S.b2.locked[S.b2.order[i]]) U.push(i); }
+  var M=U.map(function(s){return S.b2.order[s];});
+  var a=M.indexOf(id),b=U.indexOf(target); if(a<0||b<0||a===b)return false;
+  M.splice(a,1); M.splice(b,0,id);
+  U.forEach(function(s,k){S.b2.order[s]=M[k];});
+  return true;
+}
+function moveBy(id,dir){
+  var U=[],i; for(i=0;i<8;i++){ if(!S.b2.locked[S.b2.order[i]]) U.push(i); }
+  var k=U.indexOf(slotOf(id))+dir; if(k<0||k>=U.length)return;
+  if(moveTo(id,U[k])){ layoutSort(); save(); }
+}
+function initSortItem(el){
+  var pid=null,sy=0,base=0,id=el.getAttribute('data-id');
+  el.addEventListener('pointerdown',function(e){
+    if(pid!==null||S.b2.locked[id]||S.b2.solved)return;
+    if(e.target.closest&&e.target.closest('button'))return;
+    pid=e.pointerId; sy=e.clientY; base=slotOf(id)*ROW;
+    try{el.setPointerCapture(pid);}catch(_){}
+    el.classList.add('drag'); e.preventDefault();
+  });
+  el.addEventListener('pointermove',function(e){
+    if(e.pointerId!==pid)return;
+    var y=Math.max(0,Math.min(7*ROW,base+(e.clientY-sy)));
+    el.style.transform='translateY('+y+'px)';
+    var t=Math.round(y/ROW);
+    if(t!==slotOf(id)&&!S.b2.locked[S.b2.order[t]]){ if(moveTo(id,t)) layoutSort(el); }
+  });
+  function end(e){
+    if(e.pointerId!==pid)return;
+    try{el.releasePointerCapture(pid);}catch(_){}
+    pid=null; el.classList.remove('drag'); layoutSort(); save();
+  }
+  el.addEventListener('pointerup',end);
+  el.addEventListener('pointercancel',end);
+  el.querySelector('.up').addEventListener('click',function(){moveBy(id,-1);});
+  el.querySelector('.down').addEventListener('click',function(){moveBy(id,1);});
+}
+function buildSort(){
+  var L=$('sortList'); L.innerHTML='';
+  SORT_INIT.forEach(function(id){
+    var d=document.createElement('div');
+    d.className='sitem'; d.setAttribute('data-id',id);
+    d.innerHTML='<span class="grip" aria-hidden="true"><i></i><i></i><i></i></span><span class="snm">'+SNAME[id]+'</span>'+
+      '<span class="sst">✓ richtig</span>'+
+      '<button type="button" class="sb up" aria-label="'+SNAME[id]+' nach oben"><svg aria-hidden="true"><use href="#ic-up"/></svg></button>'+
+      '<button type="button" class="sb down" aria-label="'+SNAME[id]+' nach unten"><svg aria-hidden="true"><use href="#ic-down"/></svg></button>';
+    L.appendChild(d); initSortItem(d);
+  });
+  layoutSort();
+}
+function renderB2(){
+  layoutSort();
+  var s=!!S.b2.solved;
+  show($('b2rest'),s); show($('b2t1done'),s);
+  show($('sortCheck'),!s); show($('sortSol'),!s&&S.b2.fails>=3);
+}
+function sortSolved(msg){
+  S.b2.order=SORT_OK.slice(); SORT_OK.forEach(function(id){S.b2.locked[id]=true;});
+  S.b2.solved=true; S.done[2]=true; save();
+  renderB2(); renderNav(); updateLocks(); fb($('sortFb'),'ok',msg);
+}
+$('sortCheck').addEventListener('click',function(){
+  var n=0,firstWrong=null;
+  SORT_OK.forEach(function(id,i){
+    if(S.b2.order[i]===id){S.b2.locked[id]=true;n++;} else if(firstWrong===null){firstWrong=id;}
+  });
+  if(n===8){ sortSolved('Richtig. So gelangt das Licht ins Auge, und so gelangt das Signal ins Gehirn. Unten geht es weiter.'); return; }
+  S.b2.fails++; save(); layoutSort();
+  fb($('sortFb'),'err','<strong>'+n+' von 8 Stationen stehen richtig.</strong> Sie sind mit ✓ markiert und bleiben an ihrem Platz. Tipp: '+SHINT[firstWrong]);
+  show($('sortSol'),S.b2.fails>=3);
+});
+$('sortSol').addEventListener('click',function(){
+  sortSolved('Das ist die richtige Reihenfolge. Lies sie einmal von oben nach unten durch. Unten geht es weiter.');
+});
+
+/* ================= Baustein 2: Animation ================= */
+var SIG=(function(){
+  var p=[],i; for(i=0;i<=6;i++){ var a=i*3*Math.PI/180; p.push([130.5*Math.cos(a),130.5*Math.sin(a)]); }
+  p.push([192.1,62.4]); p.push([260,89]); return p;
+})();
+var SIGLEN=(function(){ var c=[0],i; for(i=1;i<SIG.length;i++){ c.push(c[i-1]+Math.sqrt(Math.pow(SIG[i][0]-SIG[i-1][0],2)+Math.pow(SIG[i][1]-SIG[i-1][1],2))); } return c; })();
+var SIG_NERVE=SIGLEN[7], SIG_END=SIGLEN[8];
+var SEG=[
+ {a:0,b:86,dur:1.0,nm:'Licht',tx:'Vom Gegenstand fällt Licht auf das Auge.'},
+ {a:86,b:96,dur:1.7,nm:'Hornhaut',tx:'Das Licht tritt durch die Hornhaut ins Auge. Hier wird es zum ersten Mal gebrochen.'},
+ {a:96,b:136,dur:1.7,nm:'Vordere Augenkammer',tx:'Das Licht durchquert das klare Kammerwasser.'},
+ {a:136,b:142,dur:1.7,nm:'Pupille',tx:'Durch die Öffnung in der Iris gelangt das Licht ins Augeninnere.'},
+ {a:142,b:190,dur:1.7,nm:'Linse',tx:'Die Linse bricht das Licht ein zweites Mal.'},
+ {a:190,b:389,dur:2.1,nm:'Glaskörper',tx:'Das Licht durchquert den durchsichtigen Glaskörper.'},
+ {a:389,b:392.5,dur:1.9,nm:'Netzhaut',tx:'Das Licht trifft auf die Sehzellen. Sie wandeln es in elektrische Signale um.'},
+ {sig:true,a:0,b:SIG_NERVE,dur:2.3,nm:'Sehnerv',tx:'Ab hier läuft kein Licht mehr, sondern ein elektrisches Signal.'},
+ {sig:true,a:SIG_NERVE,b:SIG_END,dur:1.9,nm:'Gehirn',tx:'Das Signal erreicht das Gehirn. Erst dort entsteht der Seheindruck.'}
+];
+var ANIM_TOTAL=SEG.reduce(function(s,g){return s+g.dur;},0);
+var anim={t:0,playing:false,raf:0,last:0};
+function sigPts(d){
+  var pts=[SIG[0]],i;
+  for(i=1;i<SIG.length;i++){
+    if(SIGLEN[i]<=d){ pts.push(SIG[i]); }
+    else{ var f=(d-SIGLEN[i-1])/(SIGLEN[i]-SIGLEN[i-1]); pts.push([SIG[i-1][0]+(SIG[i][0]-SIG[i-1][0])*f,SIG[i-1][1]+(SIG[i][1]-SIG[i-1][1])*f]); break; }
+  }
+  return pts;
+}
+function animDraw(){
+  var t=Math.min(anim.t,ANIM_TOTAL),k=0,acc=0;
+  while(k<SEG.length-1&&t>acc+SEG[k].dur){ acc+=SEG[k].dur; k++; }
+  var g=SEG[k],f=Math.max(0,Math.min(1,(t-acc)/g.dur)),d=g.a+(g.b-g.a)*f,x,y;
+  var dot=$('animDot'),lbl=$('animLbl');
+  if(!g.sig){
+    x=-262+d; y=0;
+    $('animLight').setAttribute('points','-262,0 '+x.toFixed(1)+',0');
+    $('animSig').setAttribute('points','');
+    dot.setAttribute('fill','#d27d00');
+  }else{
+    var pts=sigPts(d); x=pts[pts.length-1][0]; y=pts[pts.length-1][1];
+    $('animLight').setAttribute('points','-262,0 130.5,0');
+    $('animSig').setAttribute('points',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' '));
+    dot.setAttribute('fill','#4a3f9a');
+  }
+  dot.setAttribute('cx',x.toFixed(1)); dot.setAttribute('cy',y.toFixed(1));
+  dot.setAttribute('r',(k===6?7+3*Math.sin(f*Math.PI*3):7).toFixed(1));
+  lbl.textContent=(t===0)?'':g.nm;
+  lbl.setAttribute('x',Math.max(-205,Math.min(k===8?212:250,x)).toFixed(1)); lbl.setAttribute('y',(y-18).toFixed(1));
+  var st=$('animStat');
+  if(t===0) st.innerHTML='<p style="margin:0" class="muted">Tippe auf „Start“.</p>';
+  else if(k===0) st.innerHTML='<p style="margin:0">'+g.tx+'</p>';
+  else st.innerHTML='<p style="margin:0"><strong>Station '+k+' von 8: '+g.nm+'</strong><br>'+g.tx+'</p>';
+  if(st.getAttribute('data-k')!==String(k)+(t===0?'i':'')) st.setAttribute('data-k',String(k)+(t===0?'i':''));
+}
+function animButtons(){
+  var end=anim.t>=ANIM_TOTAL;
+  $('animStart').disabled=anim.playing||end;
+  $('animStart').querySelector('span').textContent=(anim.t>0&&!end)?'Weiter':'Start';
+  $('animPause').disabled=!anim.playing;
+  $('animReset').disabled=anim.t===0;
+}
+function animTick(now){
+  if(!anim.playing)return;
+  var dt=Math.min(0.1,(now-anim.last)/1000); anim.last=now; anim.t+=dt;
+  if(anim.t>=ANIM_TOTAL){ anim.t=ANIM_TOTAL; anim.playing=false; }
+  animDraw();
+  if(anim.playing) anim.raf=requestAnimationFrame(animTick); else animButtons();
+}
+function animPlay(){ if(anim.playing||anim.t>=ANIM_TOTAL)return; anim.playing=true; anim.last=performance.now(); anim.raf=requestAnimationFrame(animTick); animButtons(); }
+function animPause(){ if(!anim.playing)return; anim.playing=false; cancelAnimationFrame(anim.raf); animButtons(); }
+$('animStart').addEventListener('click',animPlay);
+$('animPause').addEventListener('click',animPause);
+$('animReset').addEventListener('click',function(){ animPause(); anim.t=0; animDraw(); animPlay(); });
+
+/* ================= Baustein 2: Strahlengang ================= */
+function drawRay(){
+  var D=+$('raySl').value,H=50,xN=-72,xl=-96,xX=-118,Pc=1/120;
+  var xo=-171-D;
+  var yi=H*(127-xN)/(xN-xo);
+  var xI=Math.sqrt(127*127-yi*yi);
+  /* Strahl von der Spitze: an der Hornhaut gebrochen, durch die Pupillenmitte (xX), an der Linse erneut gebrochen */
+  var a=10,xc=-175,cd=57,it,k;
+  for(it=0;it<4;it++){ xc=-73.4-Math.sqrt(102.6*102.6-a*a); cd=xX-xc; k=(xc-xo)*(1/cd-Pc); a=H/(k+1); }
+  var b=-a*(xl-xX)/cd;
+  function P(x,y){return x.toFixed(1)+','+y.toFixed(1);}
+  $('rayTip').setAttribute('points',[P(xo,-H),P(xc,-a),P(xl,-b),P(xI,yi)].join(' '));
+  $('rayFoot').setAttribute('points',[P(xo,H),P(xc,a),P(xl,b),P(xI,-yi)].join(' '));
+  $('rayObj').innerHTML='<line x1="'+xo+'" y1="'+H+'" x2="'+xo+'" y2="'+(-H+12)+'" stroke="#1b2624" stroke-width="5"/>'+
+    '<polygon points="'+P(xo,-H)+' '+P(xo-11,-H+19)+' '+P(xo+11,-H+19)+'" fill="#d27d00" stroke="#1b2624" stroke-width="1.2"/>'+
+    '<rect x="'+(xo-11)+'" y="'+(H-3)+'" width="22" height="7" fill="#2b4f8c"/>';
+  var xi=xI-3;
+  $('rayImg').innerHTML='<line x1="'+xi.toFixed(1)+'" y1="'+(-yi).toFixed(1)+'" x2="'+xi.toFixed(1)+'" y2="'+(yi-6).toFixed(1)+'" stroke="#1b2624" stroke-width="3"/>'+
+    '<polygon points="'+P(xi,yi)+' '+P(xi-5.5,yi-10)+' '+P(xi+5.5,yi-10)+'" fill="#d27d00" stroke="#1b2624" stroke-width="0.8"/>'+
+    '<rect x="'+(xi-5.5).toFixed(1)+'" y="'+(-yi-1.5).toFixed(1)+'" width="11" height="4" fill="#2b4f8c"/>';
+  $('rayRing').setAttribute('r',(yi+11).toFixed(1));
+  var lb=$('rayObjLbl'); lb.setAttribute('x',Math.max(72,765+0.85*xo).toFixed(1)); lb.setAttribute('y',(165+0.85*H+28).toFixed(1));
+  var h=yi*0.85*2.2;
+  $('lupeImg').innerHTML='<line x1="0" y1="'+(-h).toFixed(1)+'" x2="0" y2="'+(h-12).toFixed(1)+'" stroke="#1b2624" stroke-width="5"/>'+
+    '<polygon points="'+P(0,h)+' '+P(-11,h-19)+' '+P(11,h-19)+'" fill="#d27d00" stroke="#1b2624" stroke-width="1.2"/>'+
+    '<rect x="-11" y="'+(-h-3).toFixed(1)+'" width="22" height="7" fill="#2b4f8c"/>';
+}
+$('raySl').addEventListener('input',drawRay);
+
+/* ================= Baustein 3 ================= */
+var PX_PER_CM=52; /* iPad-Bildschirm: 132 CSS-Pixel pro Zoll */
+function fmtCm(v){ var t=Math.round(v*2)/2; return (t%1?t.toFixed(1):String(t)).replace('.',',')+' cm'; }
+
+/* --- Schritt 1: Vorhersage --- */
+var PRED_OK='weiter';
+var PRED_WHY='Wenn das Bild immer auf dieselbe Stelle der Netzhaut fallen muss, muss das Licht des Punktes im gleichen Winkel ins Auge fallen. Liegt der Punkt weiter außen, gelingt das nur aus größerer Entfernung. Vermutung B sagt dagegen voraus: Der Punkt verschwindet beim gleichen Abstand – er ist dem Auge dann ja gleich nah. Der Versuch kann also zwischen A und B entscheiden.';
+var PRED_FB={
+  gleich:'<strong>Nicht ganz.</strong> Das würde Vermutung B voraussagen. Überlege für Vermutung A: Liegt der Punkt weiter außen, fällt sein Bild auch weiter außen auf die Netzhaut. Wie musst du das iPad bewegen, damit es trotzdem auf dieselbe Stelle fällt?',
+  naeher:'<strong>Nicht ganz.</strong> Wenn du näher herangehst, fällt das Licht des Punktes noch schräger ins Auge. Sein Bild landet dann noch weiter außen auf der Netzhaut – nicht auf derselben Stelle.'
+};
+function renderPred(){
+  var bs=document.querySelectorAll('#predMc button'),i,solved=S.b3.pred===PRED_OK;
+  for(i=0;i<bs.length;i++){
+    var v=bs[i].getAttribute('data-v'),w=S.b3.wrong.indexOf(v)>=0,r=solved&&v===PRED_OK;
+    bs[i].classList.toggle('wrong',w); bs[i].classList.toggle('right',r);
+    bs[i].disabled=solved||w;
+    bs[i].querySelector('.mk').textContent=r?'✓':(w?'✗':'');
+  }
+  if(solved) fb($('predFb'),'ok',(S.b3.wrong.length>=2?'<strong>Die richtige Vorhersage ist jetzt markiert.</strong> ':'<strong>Richtig.</strong> ')+PRED_WHY);
+  else if(S.b3.pred&&PRED_FB[S.b3.pred]) fb($('predFb'),'err',PRED_FB[S.b3.pred]);
+  else $('predFb').hidden=true;
+  show($('g1Btn'),!S.b3.g1); show($('predWrap'),!!S.b3.g1);
+  show($('b3test'),solved);
+}
+$('predMc').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('button'):null; if(!b||b.disabled)return;
+  var v=b.getAttribute('data-v');
+  if(v!==PRED_OK&&S.b3.wrong.indexOf(v)<0) S.b3.wrong.push(v);
+  S.b3.pred=(v!==PRED_OK&&S.b3.wrong.length>=2)?PRED_OK:v;
+  save(); renderPred();
+});
+
+/* --- Schritt 2: Versuch --- */
+function renderExp(){
+  var d=S.b3.d,i;
+  $('expGap').style.width=Math.round(d*PX_PER_CM-28)+'px';
+  $('expIn').classList.toggle('mir',!!S.b3.mir);
+  $('expCm').textContent=fmtCm(d);
+  $('expSl').value=d;
+  [[4,'exp4'],[8,'exp8']].forEach(function(p){ var on=d===p[0]; $(p[1]).classList.toggle('on',on); $(p[1]).setAttribute('aria-pressed',on?'true':'false'); });
+  var c=document.querySelectorAll('.eyeClose'),o=document.querySelectorAll('.eyeOpen');
+  for(i=0;i<c.length;i++) c[i].textContent=S.b3.mir?'rechte':'linke';
+  for(i=0;i<o.length;i++) o[i].textContent=S.b3.mir?'linken':'rechten';
+}
+$('expSl').addEventListener('input',function(){ S.b3.d=+this.value; renderExp(); saveSoon(); });
+$('exp4').addEventListener('click',function(){ S.b3.d=4; renderExp(); save(); });
+$('exp8').addEventListener('click',function(){ S.b3.d=8; renderExp(); save(); });
+
+var REF='Zum Vergleich: Bei 4 cm verschwindet der Punkt meist bei etwa 15 cm Abstand, bei 8 cm bei etwa 30 cm.';
+var OBS_FB={
+  weiter:['ok','<strong>Deine Beobachtung passt zur Vorhersage von Vermutung A.</strong> Das Ergebnis stützt Vermutung A. Zu Vermutung B passt es nicht. '+REF],
+  gleich:['info','Deine Beobachtung passt nicht zur Vorhersage von Vermutung A. Wiederhole den Versuch langsam und achte genau auf den Abstand. '+REF+' Im Modell unten kannst du es nachprüfen.'],
+  naeher:['info','Deine Beobachtung passt nicht zur Vorhersage von Vermutung A. Wiederhole den Versuch langsam und achte genau auf den Abstand. '+REF+' Im Modell unten kannst du es nachprüfen.'],
+  nie:['info','Prüfe: Ist ein Auge ganz geschlossen? Schaust du die ganze Zeit auf das Kreuz? Bewegst du das iPad langsam? Versuche es noch einmal. Du kannst auch im Modell unten weiterarbeiten.']
+};
+function renderObs(){
+  var bs=document.querySelectorAll('#obsMc button'),i,o=S.b3.obs;
+  for(i=0;i<bs.length;i++){
+    var on=bs[i].getAttribute('data-v')===o;
+    bs[i].classList.toggle('pick',on); bs[i].setAttribute('aria-pressed',on?'true':'false');
+    bs[i].querySelector('.mk').textContent=on?'●':'';
+  }
+  if(o&&OBS_FB[o]) fb($('obsFb'),OBS_FB[o][0],OBS_FB[o][1]); else $('obsFb').hidden=true;
+  show($('b3rest'),!!o);
+}
+$('obsMc').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('button'):null; if(!b)return;
+  S.b3.obs=b.getAttribute('data-v'); save(); renderObs(); simDraw();
+});
+
+/* --- Schritt 3: Modell (Draufsicht, Auge vergrößert, Winkel maßstabsgetreu) --- */
+var SIM={N:[745,190],C:[780,190],R:63,k:11,b0:12.25,b1:17.75};
+var D2R=Math.PI/180;
+function simHit(th){
+  var c=Math.cos(th),s=Math.sin(th),nx=SIM.N[0]-SIM.C[0],nd=nx*c,t=-nd+Math.sqrt(nd*nd-(nx*nx-SIM.R*SIM.R));
+  return [SIM.N[0]+t*c,SIM.N[1]+t*s];
+}
+function simAng(p){ return Math.atan2(p[1]-SIM.C[1],p[0]-SIM.C[0]); }
+function simPt(phi,r){ return [SIM.C[0]+r*Math.cos(phi),SIM.C[1]+r*Math.sin(phi)]; }
+function P2(p){ return p[0].toFixed(1)+' '+p[1].toFixed(1); }
+(function simStatic(){
+  var f1=simAng(simHit(SIM.b0*D2R)),f2=simAng(simHit(SIM.b1*D2R)),a=-115*D2R,b=115*D2R,R=SIM.R;
+  $('simRet1').setAttribute('d','M'+P2(simPt(a,R))+' A'+R+' '+R+' 0 0 1 '+P2(simPt(f1,R)));
+  $('simRet2').setAttribute('d','M'+P2(simPt(f2,R))+' A'+R+' '+R+' 0 0 1 '+P2(simPt(b,R)));
+  $('simNerve').setAttribute('points',[simPt(f1,R-3),simPt(f2,R-3),simPt(f2,R+44),simPt(f1,R+44)].map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' '));
+})();
+function simGone(s,d){ var deg=Math.atan(s/d)/D2R; return deg>=SIM.b0&&deg<=SIM.b1; }
+function simDraw(){
+  var d=S.b3.simD,s=S.b3.simS,k=SIM.k,N=SIM.N,x=N[0]-d*k,yP=N[1]-s*k,th=Math.atan(s/d),h=simHit(th),f=simHit(0),gone=simGone(s,d);
+  $('simPad').setAttribute('transform','translate('+x.toFixed(1)+' 0)');
+  var dot=$('simDot'); dot.setAttribute('cy',yP.toFixed(1));
+  dot.setAttribute('fill',gone?'#fff':'#111'); dot.setAttribute('stroke-dasharray',gone?'3 3':'');
+  $('simDotLbl').setAttribute('y',(yP+5).toFixed(1));
+  $('simRayP').setAttribute('points',x.toFixed(1)+','+yP.toFixed(1)+' '+N[0]+','+N[1]+' '+h[0].toFixed(1)+','+h[1].toFixed(1));
+  $('simRayX').setAttribute('points',x.toFixed(1)+',190 '+N[0]+',190 '+f[0].toFixed(1)+','+f[1].toFixed(1));
+  var hp='translate('+h[0].toFixed(1)+' '+h[1].toFixed(1)+')';
+  $('simHitOk').setAttribute('transform',hp); $('simHitNo').setAttribute('transform',hp);
+  show($('simHitOk'),!gone); show($('simHitNo'),gone);
+  $('simDim').setAttribute('d','M'+x.toFixed(1)+' 332V348M'+x.toFixed(1)+' 340H'+N[0]+'M'+N[0]+' 332V348');
+  var t=$('simDimTxt'); t.setAttribute('x',((x+N[0])/2).toFixed(1)); t.textContent='Abstand Auge – iPad: '+fmtCm(d);
+  $('simDLbl').textContent=fmtCm(d); $('simD').value=d;
+  [[4,'simS4'],[8,'simS8']].forEach(function(p){ var on=s===p[0]; $(p[1]).classList.toggle('on',on); $(p[1]).setAttribute('aria-pressed',on?'true':'false'); });
+  if(gone) fb($('simOut'),'err','<strong>Der Punkt ist nicht zu sehen.</strong> Sein Bild fällt auf die Stelle, an der der Sehnerv austritt.');
+  else fb($('simOut'),'ok','<strong>Der Punkt ist zu sehen.</strong> Sein Bild fällt auf Sehzellen.');
+  if(gone&&!S.b3.found[s]){ S.b3.found[s]=true; saveSoon(); }
+  var li='';
+  [4,8].forEach(function(v){
+    var lo=Math.round(v/Math.tan(SIM.b1*D2R)),hi=Math.round(v/Math.tan(SIM.b0*D2R));
+    li+='<li><strong>Punkt '+v+' cm neben dem Kreuz:</strong> '+(S.b3.found[v]?('verschwindet bei etwa '+lo+' bis '+hi+' cm Abstand'):'noch nicht gefunden')+'</li>';
+  });
+  $('simFound').innerHTML=li;
+}
+$('simD').addEventListener('input',function(){ S.b3.simD=+this.value; simDraw(); saveSoon(); });
+$('simS4').addEventListener('click',function(){ S.b3.simS=4; simDraw(); save(); });
+$('simS8').addEventListener('click',function(){ S.b3.simS=8; simDraw(); save(); });
+
+/* --- Schritt 4 und Transfer --- */
+function checkDone3(){
+  if(S.b3.step>=3&&!S.done[3]){ S.done[3]=true; save(); renderNav(); updateLocks(); }
+}
+function renderB3(){
+  renderPred(); renderExp(); renderObs(); simDraw();
+  var n=S.b3.step,i,k;
+  var es=document.querySelectorAll('#b3steps .estep');
+  for(i=0;i<es.length;i++) es[i].hidden=(+es[i].getAttribute('data-n')>n);
+  for(k=1;k<=3;k++){ var g=document.querySelectorAll('#bfFig .s'+k); for(i=0;i<g.length;i++) show(g[i],n>=k); }
+  show($('g4Btn'),!S.b3.g4); show($('b3stepWrap'),!!S.b3.g4);
+  show($('b3stepBtn'),n<3);
+  show($('b3ws2'),n>=3);
+  $('b3stepBtn').textContent='Schritt '+Math.min(3,n+1)+' aufdecken';
+  $('b3txt').value=S.b3.txt||''; show($('b3sol'),!!S.b3.sol);
+  $('b3c1').checked=!!S.b3.c1; $('b3c2').checked=!!S.b3.c2;
+}
+$('g1Btn').addEventListener('click',function(){ S.b3.g1=true; save(); renderPred(); });
+$('g4Btn').addEventListener('click',function(){ S.b3.g4=true; save(); renderB3(); });
+$('b3stepBtn').addEventListener('click',function(){
+  if(S.b3.step<3) S.b3.step++;
+  save(); renderB3(); checkDone3();
+});
+function selfCheck(btn,fbEl,txtKey,solKey,after){
+  var warned=false;
+  $(btn).addEventListener('click',function(){
+    if(!S.b3[solKey]&&!(S.b3[txtKey]||'').trim()&&!warned){
+      warned=true;
+      fb($(fbEl),'info','Schreibe zuerst deine eigene Antwort auf – ein Satz reicht. Fällt dir nichts ein, tippe noch einmal auf die Schaltfläche.');
+      return;
+    }
+    $(fbEl).hidden=true; S.b3[solKey]=true; save(); renderB3(); if(after) after();
+  });
+}
+selfCheck('b3solBtn','b3fb','txt','sol',null);
+$('b3txt').addEventListener('input',function(){ S.b3.txt=this.value; saveSoon(); });
+['b3c1','b3c2'].forEach(function(id){
+  $(id).addEventListener('change',function(){ S.b3[id.slice(2)]=this.checked; save(); });
+});
+
+/* ================= Baustein 4: Zusatz, Teil B (linkes Auge) ================= */
+var LP_OK='links';
+var LP_WHY='Auch beim linken Auge liegt der Blinde Fleck auf der Nasenseite der Netzhaut – das ist hier die rechte Seite. Weil das Bild seitenverkehrt ist, fällt dorthin das Licht von Dingen, die links liegen. Der Punkt muss also links vom Kreuz liegen.';
+var LP_FB={
+  rechts:'<strong>Nicht ganz.</strong> Beim linken Auge liegt die Nasenseite rechts. Das Bild auf der Netzhaut ist seitenverkehrt: Licht, das auf die rechte Seite der Netzhaut fällt, kommt von links.',
+  beide:'<strong>Nicht ganz.</strong> Der Blinde Fleck liegt in jedem Auge nur an einer Stelle – auf der Nasenseite. Deshalb gibt es im Sehfeld auch nur eine Seite, auf der der Punkt verschwinden kann.'
+};
+var LOB_FB={
+  ok:['ok','<strong>Deine Vorhersage trifft zu.</strong> Die Gegenprobe mit dem rechten Auge zeigt: Es liegt wirklich an der Lage des Blinden Flecks und nicht daran, wie nah der Punkt ist.'],
+  beide:['info','Normalerweise verschwindet der Punkt nur mit dem linken Auge. Prüfe bei der Gegenprobe: Ist das linke Auge ganz geschlossen? Schaust du genau auf das Kreuz?'],
+  keins:['info','Normalerweise verschwindet der Punkt mit dem linken Auge bei etwa 15 cm Abstand. Bewege das iPad langsamer und schau die ganze Zeit auf das Kreuz.']
+};
+function renderB4(){
+  var bs=document.querySelectorAll('#lpMc button'),i,solved=S.b4.lp===LP_OK;
+  for(i=0;i<bs.length;i++){
+    var v=bs[i].getAttribute('data-v'),w=S.b4.lwrong.indexOf(v)>=0,r=solved&&v===LP_OK;
+    bs[i].classList.toggle('wrong',w); bs[i].classList.toggle('right',r);
+    bs[i].disabled=solved||w;
+    bs[i].querySelector('.mk').textContent=r?'✓':(w?'✗':'');
+  }
+  if(solved) fb($('lpFb'),'ok',(S.b4.lwrong.length>=2?'<strong>Die richtige Vorhersage ist jetzt markiert.</strong> ':'<strong>Richtig.</strong> ')+LP_WHY);
+  else if(S.b4.lp&&LP_FB[S.b4.lp]) fb($('lpFb'),'err',LP_FB[S.b4.lp]);
+  else $('lpFb').hidden=true;
+  show($('lTest'),solved);
+  var o=S.b4.lobs,ob=document.querySelectorAll('#lobMc button');
+  for(i=0;i<ob.length;i++){
+    var on=ob[i].getAttribute('data-v')===o;
+    ob[i].classList.toggle('pick',on); ob[i].setAttribute('aria-pressed',on?'true':'false');
+    ob[i].querySelector('.mk').textContent=on?'●':'';
+  }
+  if(o&&LOB_FB[o]) fb($('lobFb'),LOB_FB[o][0],LOB_FB[o][1]); else $('lobFb').hidden=true;
+  show($('lWs'),!!o);
+}
+$('lpMc').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('button'):null; if(!b||b.disabled)return;
+  var v=b.getAttribute('data-v');
+  if(v!==LP_OK&&S.b4.lwrong.indexOf(v)<0) S.b4.lwrong.push(v);
+  S.b4.lp=(v!==LP_OK&&S.b4.lwrong.length>=2)?LP_OK:v;
+  save(); renderB4();
+});
+$('lobMc').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('button'):null; if(!b)return;
+  S.b4.lobs=b.getAttribute('data-v'); save(); renderB4();
+});
+
+/* ================= Start ================= */
+function initAll(){
+  $('b1fb').hidden=true; $('sortFb').hidden=true; $('b3fb').hidden=true;
+  buildHotspots(); M3.reset(); renderB1();
+  buildSort(); renderB2();
+  anim.t=0; anim.playing=false; animDraw(); animButtons();
+  drawRay(); renderB3(); renderB4();
+  if(!inLesson(S.cur)||!unlocked(S.cur)) S.cur=0;
+  go(S.cur,true);
+}
+(function(){
+  var els=document.querySelectorAll('[data-lesson]'),i;
+  for(i=0;i<els.length;i++){ if(els[i].getAttribute('data-lesson')!==String(LESSON)) els[i].hidden=true; }
+  $('brandSub').textContent='Klasse 9 · Stunde '+LESSON;
+})();
+initAll();
+})();
+</script>
+</body>
+</html>
